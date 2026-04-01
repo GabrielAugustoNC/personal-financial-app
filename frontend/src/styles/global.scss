@@ -1,0 +1,126 @@
+// ============================================================
+// Estilos globais — reset, base e animações
+// Importado apenas uma vez em main.tsx
+// ============================================================
+
+// Reset moderno
+*,
+*::before,
+*::after {
+  box-sizing : border-box;
+  margin     : 0;
+  padding    : 0;
+}
+
+html {
+  font-size                : 16px;
+  -webkit-font-smoothing   : antialiased;
+  -moz-osx-font-smoothing  : grayscale;
+  text-rendering           : optimizeLegibility;
+  scroll-behavior          : smooth;
+
+  @include scrollbar;
+}
+
+body {
+  font-family      : $font-primary;
+  background-color : $color-bg-deep;
+  color            : $color-text-primary;
+  line-height      : 1.6;
+  min-height       : 100vh;
+}
+
+button {
+  font-family : inherit;
+  cursor      : pointer;
+  border      : none;
+  background  : none;
+}
+
+input,
+select,
+textarea {
+  font-family : inherit;
+  outline     : none;
+}
+
+a {
+  text-decoration : none;
+  color           : inherit;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img {
+  display   : block;
+  max-width : 100%;
+}
+
+#root {
+  display    : flex;
+  min-height : 100vh;
+}
+
+// ---- Animações globais ----
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400% 0; }
+  100% { background-position:  400% 0; }
+}
+
+// ---- Utilitários globais ----
+
+.fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.fade-in-scale {
+  animation: fadeInScale 0.25s ease both;
+}
+
+// Skeleton loader (shimmer)
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    $color-bg-card        25%,
+    $color-bg-card-hover  50%,
+    $color-bg-card        75%
+  );
+  background-size : 400% 100%;
+  animation       : shimmer 1.8s infinite;
+  border-radius   : $radius-md;
+}
+
+// Fonte mono para valores financeiros
+.mono {
+  font-family : $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---- Scrollbar customizada nos containers ----
+.scrollable {
+  @include scrollbar;
+  overflow-y: auto;
+}

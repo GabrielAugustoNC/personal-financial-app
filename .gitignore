@@ -1,0 +1,24 @@
+# ============================================================
+# .gitignore — financas-app
+# ============================================================
+
+# ---- Backend (Go) ----
+backend/.env              # variáveis de ambiente — NUNCA versionar
+backend/bin/              # binários compilados
+backend/tmp/              # air (hot reload)
+
+# ---- Frontend (Node) ----
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# ---- IDEs ----
+.vscode/settings.json
+.idea/
+*.suo
+*.user
+
+# ---- Sistema ----
+.DS_Store
+Thumbs.db

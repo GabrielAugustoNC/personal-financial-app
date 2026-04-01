@@ -1,0 +1,111 @@
+.sidebar {
+  @include flex-col;
+  width      : $sidebar-width;
+  min-height : 100vh;
+  background : $color-bg-sidebar;
+  border-right: 1px solid $color-border;
+  padding    : $space-6 $space-4;
+  flex-shrink: 0;
+  position   : sticky;
+  top        : 0;
+}
+
+.logo {
+  @include flex-center;
+  gap           : $space-3;
+  padding       : $space-2 $space-3 $space-6;
+  border-bottom : 1px solid $color-border;
+  margin-bottom : $space-6;
+  justify-content: flex-start;
+}
+
+.logoIcon {
+  @include flex-center;
+  width         : 36px;
+  height        : 36px;
+  background    : $color-accent-dim;
+  border        : 1px solid rgba($color-accent, 0.3);
+  border-radius : $radius-md;
+  font-size     : 1rem;
+  color         : $color-accent-light;
+}
+
+.logoText {
+  font-size   : 1rem;
+  font-weight : 600;
+  color       : $color-text-primary;
+  letter-spacing: -0.01em;
+}
+
+.nav {
+  @include flex-col;
+  gap  : $space-1;
+  flex : 1;
+}
+
+.navLabel {
+  font-size     : 0.65rem;
+  font-weight   : 600;
+  color         : $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding       : 0 $space-3;
+  margin-bottom : $space-2;
+}
+
+.navItem {
+  @include flex-center;
+  justify-content : flex-start;
+  gap             : $space-3;
+  width           : 100%;
+  padding         : $space-3;
+  border-radius   : $radius-md;
+  color           : $color-text-secondary;
+  font-size       : 0.875rem;
+  font-weight     : 500;
+  transition      : all $transition-fast;
+  text-align      : left;
+
+  &:hover {
+    background : rgba(255, 255, 255, 0.04);
+    color      : $color-text-primary;
+  }
+
+  &.active {
+    background : $color-accent-dim;
+    color      : $color-accent-light;
+    border     : 1px solid rgba($color-accent, 0.2);
+
+    .navIcon { color: $color-accent-light; }
+  }
+
+  &.accent-income.active {
+    background : $color-income-bg;
+    color      : $color-income;
+    border-color: $color-income-border;
+  }
+
+  &.accent-expense.active {
+    background : $color-expense-bg;
+    color      : $color-expense;
+    border-color: $color-expense-border;
+  }
+}
+
+.navIcon {
+  color      : $color-text-muted;
+  transition : color $transition-fast;
+  flex-shrink: 0;
+}
+
+.footer {
+  padding-top  : $space-6;
+  border-top   : 1px solid $color-border;
+  margin-top   : auto;
+}
+
+.version {
+  font-size : 0.7rem;
+  color     : $color-text-muted;
+  font-family: $font-mono;
+}

@@ -1,0 +1,122 @@
+// ============================================================
+// Mixins — utilitários de estilo reutilizáveis
+// ============================================================
+@use "variables" as *;
+// Layout
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+// Card padrão da aplicação
+@mixin card {
+  background    : $color-bg-card;
+  border        : 1px solid $color-border;
+  border-radius : $radius-lg;
+  transition    : border-color $transition-base, box-shadow $transition-base;
+}
+
+@mixin card-hover {
+  &:hover {
+    border-color : $color-border-medium;
+    box-shadow   : $shadow-card;
+  }
+}
+
+// Scrollbar customizada (minimalista)
+@mixin scrollbar {
+  &::-webkit-scrollbar       { width: 4px; height: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background    : rgba(255, 255, 255, 0.16);
+    border-radius : 9999px;
+    &:hover { background: $color-text-muted; }
+  }
+}
+
+// Texto truncado com reticências
+@mixin truncate {
+  overflow      : hidden;
+  text-overflow : ellipsis;
+  white-space   : nowrap;
+}
+
+// Efeito de brilho colorido
+@mixin glow($color) {
+  box-shadow: 0 0 16px rgba($color, 0.3), 0 0 32px rgba($color, 0.1);
+}
+
+// Botão base
+@mixin btn-base {
+  display       : inline-flex;
+  align-items   : center;
+  gap           : $space-2;
+  padding       : $space-2 $space-4;
+  border-radius : $radius-md;
+  font-family   : $font-primary;
+  font-size     : 0.875rem;
+  font-weight   : 500;
+  cursor        : pointer;
+  border        : none;
+  transition    : all $transition-base;
+  white-space   : nowrap;
+
+  &:disabled {
+    opacity : 0.5;
+    cursor  : not-allowed;
+  }
+}
+
+// Input base
+@mixin input-base {
+  width         : 100%;
+  padding       : $space-3 $space-4;
+  background    : $color-bg-input;
+  border        : 1px solid $color-border-medium;
+  border-radius : $radius-md;
+  color         : $color-text-primary;
+  font-family   : $font-primary;
+  font-size     : 0.875rem;
+  transition    : border-color $transition-fast, box-shadow $transition-fast;
+  outline       : none;
+
+  &::placeholder {
+    color: $color-text-muted;
+  }
+
+  &:focus {
+    border-color : $color-border-active;
+    box-shadow   : 0 0 0 3px $color-accent-dim;
+  }
+}
+
+// Badge colorido (tipo de transação)
+@mixin badge($bg, $color, $border) {
+  display       : inline-flex;
+  align-items   : center;
+  gap           : $space-1;
+  padding       : 2px $space-2;
+  background    : $bg;
+  border        : 1px solid $border;
+  border-radius : 9999px;
+  color         : $color;
+  font-size     : 0.75rem;
+  font-weight   : 500;
+}
+
+// Media queries
+@mixin mobile  { @media (max-width: 640px)  { @content; } }
+@mixin tablet  { @media (max-width: 1024px) { @content; } }
+@mixin desktop { @media (min-width: 1025px) { @content; } }

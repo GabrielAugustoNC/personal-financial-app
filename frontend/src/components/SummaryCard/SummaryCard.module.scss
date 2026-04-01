@@ -1,0 +1,76 @@
+.grid {
+  display               : grid;
+  grid-template-columns : repeat(3, 1fr);
+  gap                   : $space-4;
+
+  @include tablet {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+.card {
+  @include card;
+  @include flex-col;
+  gap     : $space-3;
+  padding : $space-6;
+  position: relative;
+  overflow: hidden;
+
+  // Linha decorativa no topo do card
+  &::before {
+    content       : '';
+    position      : absolute;
+    top           : 0;
+    left          : 0;
+    right         : 0;
+    height        : 2px;
+    border-radius : $radius-full $radius-full 0 0;
+    opacity       : 0.6;
+  }
+
+  &.income::before   { background: $color-income; }
+  &.expense::before  { background: $color-expense; }
+  &.balance::before  { background: $color-balance; }
+
+  &.skeleton { min-height: 110px; }
+}
+
+.header {
+  @include flex-between;
+}
+
+.label {
+  font-size   : 0.75rem;
+  font-weight : 600;
+  color       : $color-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.icon {
+  @include flex-center;
+  width         : 32px;
+  height        : 32px;
+  border-radius : $radius-md;
+  flex-shrink   : 0;
+
+  .income &  { color: $color-income;  background: $color-income-bg; }
+  .expense & { color: $color-expense; background: $color-expense-bg; }
+  .balance & { color: $color-balance; background: $color-balance-bg; }
+}
+
+.value {
+  font-size   : 1.75rem;
+  font-weight : 500;
+  line-height : 1;
+  letter-spacing: -0.02em;
+
+  .income &  { color: $color-income; }
+  .expense & { color: $color-expense; }
+  .balance & { color: $color-balance; }
+}
+
+// Skeleton placeholders
+.skeletonIcon  { width: 32px; height: 32px; }
+.skeletonLabel { width: 60px; height: 12px; }
+.skeletonValue { width: 130px; height: 32px; margin-top: $space-2; }

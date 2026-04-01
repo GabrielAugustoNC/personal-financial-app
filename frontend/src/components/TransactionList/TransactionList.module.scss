@@ -1,0 +1,162 @@
+.container {
+  @include flex-col;
+  gap        : $space-2;
+  max-height : 520px;
+  overflow-y : auto;
+
+  @include scrollbar;
+}
+
+.row {
+  @include flex-between;
+  gap           : $space-4;
+  padding       : $space-4 $space-5;
+  border-radius : $radius-md;
+  background    : $color-bg-card;
+  border        : 1px solid $color-border;
+  transition    : border-color $transition-fast, background $transition-fast;
+  cursor        : default;
+
+  &:hover {
+    background   : $color-bg-card-hover;
+    border-color : $color-border-medium;
+
+    .actions { opacity: 1; }
+  }
+
+  &.income .dot  { background: $color-income; box-shadow: 0 0 8px $color-income; }
+  &.expense .dot { background: $color-expense; box-shadow: 0 0 8px $color-expense; }
+}
+
+.dot {
+  width         : 8px;
+  height        : 8px;
+  border-radius : 9999px;
+  flex-shrink   : 0;
+  margin-top    : 2px;
+  align-self    : flex-start;
+}
+
+.info {
+  @include flex-col;
+  gap  : $space-1;
+  flex : 1;
+  min-width: 0;
+}
+
+.title {
+  font-size   : 0.9rem;
+  font-weight : 500;
+  color       : $color-text-primary;
+
+  @include truncate;
+}
+
+.meta {
+  display     : flex;
+  align-items : center;
+  flex-wrap   : wrap;
+  gap         : $space-1;
+  font-size   : 0.75rem;
+  color       : $color-text-secondary;
+}
+
+.category {
+  font-weight : 500;
+  color       : $color-text-secondary;
+}
+
+.sep {
+  color   : $color-text-muted;
+  font-size: 0.6rem;
+}
+
+.date { color: $color-text-muted; }
+
+.description {
+  @include truncate;
+  max-width: 200px;
+  color    : $color-text-muted;
+}
+
+.right {
+  @include flex-center;
+  gap        : $space-4;
+  flex-shrink: 0;
+}
+
+.amount {
+  font-size     : 0.95rem;
+  font-weight   : 500;
+  letter-spacing: -0.01em;
+  white-space   : nowrap;
+
+  .income &  { color: $color-income; }
+  .expense & { color: $color-expense; }
+}
+
+.actions {
+  @include flex-center;
+  gap     : $space-1;
+  opacity : 0;
+  transition: opacity $transition-fast;
+}
+
+.actionBtn {
+  @include flex-center;
+  width         : 28px;
+  height        : 28px;
+  border-radius : $radius-sm;
+  color         : $color-text-muted;
+  transition    : all $transition-fast;
+  background    : transparent;
+
+  &:hover {
+    background : rgba(255, 255, 255, 0.06);
+    color      : $color-text-secondary;
+  }
+}
+
+.deleteBtn:hover {
+  background : $color-expense-bg !important;
+  color      : $color-expense !important;
+}
+
+// Empty state
+.empty {
+  @include flex-col;
+  @include flex-center;
+  gap           : $space-3;
+  padding       : $space-16 $space-8;
+  text-align    : center;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  opacity  : 0.4;
+}
+
+.emptyTitle {
+  font-size  : 0.95rem;
+  font-weight: 500;
+  color      : $color-text-secondary;
+}
+
+.emptySubtitle {
+  font-size: 0.8rem;
+  color    : $color-text-muted;
+  max-width: 280px;
+}
+
+// Skeleton
+.skeletonRow {
+  @include flex-between;
+  gap    : $space-4;
+  padding: $space-4 $space-5;
+}
+
+.skeletonDot    { width: 8px; height: 8px; border-radius: 9999px; }
+.skeletonContent{ @include flex-col; gap: $space-2; flex: 1; }
+.skeletonTitle  { width: 40%; height: 14px; }
+.skeletonMeta   { width: 60%; height: 11px; }
+.skeletonAmount { width: 80px; height: 14px; }
