@@ -6,7 +6,7 @@
 
 ## About
 
-**Personal Finantial App** was born out of a hands-on learning process — the goal was to explore two brand-new technologies (**React** and **Go**) coming from a solid background in **Angular** and **.NET**, with Claude AI as a development partner throughout the entire journey: from initial architecture decisions to pinpointing specific bugs.
+**Personal Financial App** was born out of a hands-on learning process — the goal was to explore two brand-new technologies (**React** and **Go**) coming from a solid background in **Angular** and **.NET**, with Claude AI as a development partner throughout the entire journey: from initial architecture decisions to pinpointing specific bugs.
 
 The result is a fully functional income and expense tracker, featuring a modern dark-themed frontend, an interface-driven backend, and a local NoSQL database.
 
