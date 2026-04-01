@@ -1,4 +1,4 @@
-# 💰 Personal Finantial App
+# 💰 Personal Financial App
 
 > A full stack personal finance tracker built as a study project with the support of **Claude AI (Anthropic)**.
 
