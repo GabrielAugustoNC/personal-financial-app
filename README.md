@@ -1,67 +1,70 @@
 # 💰 Finanças App
 
-> Aplicação full stack de controle financeiro pessoal, desenvolvida como objeto de estudo com o apoio da IA **Claude (Anthropic)**.
+> A full stack personal finance tracker built as a study project with the support of **Claude AI (Anthropic)**.
 
 ---
 
-## Sobre o projeto
+## About
 
-O **Finanças App** nasceu de um processo de aprendizado prático — a ideia era explorar duas tecnologias completamente novas (**React** e **Go**) partindo de uma base sólida em **Angular** e **.NET**, com a IA Claude como parceira de desenvolvimento ao longo de todo o processo: desde a arquitetura inicial até a resolução de bugs pontuais.
+**Finanças App** was born out of a hands-on learning process — the goal was to explore two brand-new technologies (**React** and **Go**) coming from a solid background in **Angular** and **.NET**, with Claude AI as a development partner throughout the entire journey: from initial architecture decisions to pinpointing specific bugs.
 
-O resultado é uma plataforma funcional de controle de receitas e despesas, com frontend moderno em tema dark, backend orientado a interfaces e banco de dados NoSQL local.
+The result is a fully functional income and expense tracker, featuring a modern dark-themed frontend, an interface-driven backend, and a local NoSQL database.
 
 ---
 
-## Tecnologias
+## Tech Stack
 
-| Camada    | Stack                                              |
+| Layer     | Stack                                              |
 |-----------|----------------------------------------------------|
 | Frontend  | React 18 · TypeScript · Vite · SCSS Modules        |
-| Backend   | Go 1.22 · Gin · arquitetura em camadas             |
-| Banco     | MongoDB · driver oficial Go                        |
+| Backend   | Go 1.22 · Gin · layered architecture               |
+| Database  | MongoDB · official Go driver                       |
+| Quality   | strict TypeScript · no `any` · Go interfaces       |
 
 ---
 
-## Funcionalidades
+## Features
 
-- 📊 **Dashboard** com cards de resumo (receitas, despesas, saldo) e gráfico de histórico
-- ➕ **CRUD completo** de transações com validação em todas as camadas
-- 🔍 **Filtros** por tipo, categoria, título e intervalo de datas
-- 📥 **Importação em massa** via arquivo `.json` — aceita string plana ou formato MongoDB Extended JSON
-- 📤 **Download de modelo** `.json` para facilitar a importação
-- 🗂️ **Navegação por tipo** via sidebar (Receitas, Despesas, Todas)
-
----
-
-## Arquitetura
-
-O backend segue o padrão de camadas familiar ao ecossistema .NET:
-
-```
-Handler (Controller) → Service (regras de negócio) → Repository (MongoDB)
-```
-
-Cada camada depende apenas da **interface** da camada seguinte — não da implementação concreta — o que garante baixo acoplamento e facilidade para testes.
-
-O frontend organiza responsabilidades de forma análoga ao Angular:
-
-```
-Service (HTTP) → Hook customizado (estado) → Componente (apresentação)
-```
+- 📊 **Dashboard** with summary cards (income, expenses, balance) and area chart history
+- ➕ **Full CRUD** for transactions with validation across all layers
+- 🔍 **Filters** by type, category, title and date range
+- 📥 **Bulk import** via `.json` file — supports plain string or MongoDB Extended JSON date format
+- 📤 **Template download** to make importing easier
+- 🗂️ **Sidebar navigation** by type (Income, Expenses, All)
 
 ---
 
-## Desenvolvido com apoio de IA
+## Architecture
 
-Este projeto foi inteiramente construído em parceria com o **Claude Code**, IA da [Anthropic](https://anthropic.com), como objeto de estudo. Durante o desenvolvimento, o Claude atuou como:
+The backend follows the same layered pattern familiar from the .NET ecosystem:
 
-- 🏗️ **Arquiteto** — propondo a estrutura de pastas, camadas e contratos de interface
-- 🛠️ **Pair programmer** — gerando, revisando e corrigindo código em tempo real
-- 🐛 **Debugger** — diagnosticando erros de CORS, validação, tipagem e parsing de JSON
+```
+Handler (Controller) → Service (business logic) → Repository (MongoDB)
+```
+
+Each layer depends only on the **interface** of the layer below — never on the concrete implementation — ensuring low coupling and testability.
+
+The frontend mirrors Angular's separation of concerns:
+
+```
+Service (HTTP) → Custom Hook (state) → Component (presentation)
+```
 
 ---
 
-## Como rodar
+## Built with AI Support
+
+This project was built entirely in partnership with **Claude Code**, the AI assistant by [Anthropic](https://anthropic.com), as a study object. Throughout development, Claude acted as:
+
+- 🏗️ **Architect** — proposing folder structure, layers, and interface contracts
+- 🛠️ **Pair programmer** — generating, reviewing, and fixing code in real time
+- 🐛 **Debugger** — diagnosing CORS, validation, typing, and JSON parsing issues
+
+> *"The best way to learn a new stack is to build something real with it."*
+
+---
+
+## Getting Started
 
 ```bash
 # Backend
@@ -70,4 +73,3 @@ cd backend && cp .env.example .env && go mod tidy && go run main.go
 # Frontend
 cd frontend && npm install && npm run dev
 ```
-
