@@ -109,3 +109,11 @@
   color     : $color-text-muted;
   font-family: $font-mono;
 }
+
+.viewSection {
+  @include flex-col;
+  gap           : $space-1;
+  padding-top   : $space-4;
+  border-top    : 1px solid $color-border;
+  margin-top    : $space-4;
+}

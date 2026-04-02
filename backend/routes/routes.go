@@ -29,24 +29,31 @@ func Setup(router *gin.Engine, db *mongo.Database) {
 	}))
 
 	// ---- Wiring de Dependências (Composition Root) ----
-	// A ordem é: Repository → Service → Handler
-	// Cada camada depende apenas da interface da camada abaixo.
 	transactionRepo    := repositories.NewMongoTransactionRepository(db)
 	transactionService := services.NewTransactionService(transactionRepo)
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
+
+	analyticsRepo    := repositories.NewMongoAnalyticsRepository(db)
+	analyticsService := services.NewAnalyticsService(analyticsRepo)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
 
 	// ---- Definição de Rotas ----
 	api := router.Group("/api")
 	{
 		tx := api.Group("/transactions")
 		{
-			tx.GET("",          transactionHandler.GetAll)
-			tx.GET("/summary",  transactionHandler.GetSummary) // antes de /:id para não colidir
-			tx.GET("/:id",      transactionHandler.GetByID)
+			tx.GET("",                transactionHandler.GetAll)
+			tx.GET("/summary",        transactionHandler.GetSummary)
+			tx.GET("/:id",            transactionHandler.GetByID)
 			tx.POST("",               transactionHandler.Create)
 			tx.POST("/bulk-import",   transactionHandler.BulkImport)
-			tx.PUT("/:id",      transactionHandler.Update)
-			tx.DELETE("/:id",   transactionHandler.Delete)
+			tx.PUT("/:id",            transactionHandler.Update)
+			tx.DELETE("/:id",         transactionHandler.Delete)
+		}
+
+		an := api.Group("/analytics")
+		{
+			an.GET("/overview", analyticsHandler.GetOverview)
 		}
 	}
 }

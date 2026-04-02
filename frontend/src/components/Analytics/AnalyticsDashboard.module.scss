@@ -1,0 +1,395 @@
+.dashboard {
+  @include flex-col;
+  flex    : 1;
+  gap     : $space-6;
+  padding : $space-8;
+  max-width: $content-max-width;
+  width   : 100%;
+  animation: fadeIn 0.3s ease both;
+
+  @include tablet { padding: $space-5; }
+  @include mobile { padding: $space-4; }
+}
+
+.header { @include flex-between; flex-wrap: wrap; gap: $space-4; }
+
+.pageTitle {
+  font-size     : 1.5rem;
+  font-weight   : 600;
+  color         : $color-text-primary;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size : 0.8rem;
+  color     : $color-text-muted;
+  margin-top: $space-1;
+}
+
+// ---- Grid principal ----
+.grid {
+  display              : grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap                  : $space-4;
+
+  @include tablet { grid-template-columns: 1fr 1fr; }
+  @include mobile { grid-template-columns: 1fr; }
+}
+
+.spanFull { grid-column: 1 / -1; }
+.span2    { grid-column: span 2; @include mobile { grid-column: 1; } }
+.span1    { grid-column: span 1; }
+
+// ---- Card base ----
+.card {
+  @include card;
+  @include flex-col;
+  gap    : $space-4;
+  padding: $space-5 $space-6;
+}
+
+.sectionLabel {
+  font-size     : 0.7rem;
+  font-weight   : 600;
+  color         : $color-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+// ---- Tooltip customizado ----
+.tooltip {
+  background   : #0E0E1E;
+  border       : 1px solid rgba(255,255,255,0.1);
+  border-radius: $radius-md;
+  padding      : $space-3 $space-4;
+  font-size    : 12px;
+  min-width    : 140px;
+}
+
+.tooltipRow {
+  @include flex-between;
+  gap        : $space-4;
+  color      : $color-text-secondary;
+  margin-top : 2px;
+
+  &:first-child { color: $color-text-primary; }
+}
+
+// ---- Projeção ----
+.projCard {
+  @include flex-col;
+  gap          : $space-5;
+  padding      : $space-6;
+  border-radius: $radius-lg;
+  border       : 1px solid $color-border-medium;
+  background   : linear-gradient(135deg, #0E0E1E 0%, #111128 100%);
+  position     : relative;
+  overflow     : hidden;
+
+  // Linha decorativa no topo
+  &::before {
+    content      : '';
+    position     : absolute;
+    top          : 0;
+    left         : 0;
+    right        : 0;
+    height       : 2px;
+    background   : $color-accent;
+    opacity      : 0.6;
+  }
+
+  &.projPositive::before { background: $color-income; }
+  &.projNegative::before { background: $color-expense; }
+}
+
+.projHeader { @include flex-between; align-items: flex-start; }
+
+.projSubtitle {
+  font-size : 0.75rem;
+  color     : $color-text-muted;
+  margin-top: 2px;
+}
+
+.projIcon { color: $color-accent-light; opacity: 0.7; }
+
+.projBalance {
+  display    : flex;
+  align-items: center;
+  gap        : $space-4;
+  flex-wrap  : wrap;
+}
+
+.projValue {
+  font-size     : 2.25rem;
+  font-weight   : 500;
+  letter-spacing: -0.03em;
+  line-height   : 1;
+
+  &.valuePositive { color: $color-income; }
+  &.valueNegative { color: $color-expense; }
+}
+
+.projTrendBadge {
+  @include flex-center;
+  gap          : $space-1;
+  padding      : $space-1 $space-3;
+  border-radius: $radius-full;
+  font-size    : 0.75rem;
+  font-weight  : 600;
+  font-family  : $font-mono;
+
+  &.badgePositive { background: $color-income-bg;  color: $color-income;  border: 1px solid $color-income-border; }
+  &.badgeNegative { background: $color-expense-bg; color: $color-expense; border: 1px solid $color-expense-border; }
+}
+
+.projBreakdown {
+  display        : flex;
+  align-items    : center;
+  gap            : $space-6;
+  padding-top    : $space-4;
+  border-top     : 1px solid $color-border;
+  flex-wrap      : wrap;
+}
+
+.projItem { @include flex-col; gap: $space-1; }
+
+.projItemLabel {
+  font-size  : 0.7rem;
+  color      : $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.projItemValue {
+  font-size  : 1rem;
+  font-weight: 500;
+}
+
+.projDivider {
+  width     : 1px;
+  height    : 32px;
+  background: $color-border-medium;
+  flex-shrink: 0;
+}
+
+.incomeText  { color: $color-income; }
+.expenseText { color: $color-expense; }
+
+// ---- Attention points ----
+.attentionCard {
+  @include card;
+  @include flex-col;
+  gap    : $space-4;
+  padding: $space-5 $space-6;
+}
+
+.attentionList { @include flex-col; gap: $space-2; }
+
+.attentionItem {
+  @include flex-between;
+  gap          : $space-4;
+  padding      : $space-3 $space-4;
+  border-radius: $radius-md;
+  border       : 1px solid $color-border;
+  transition   : border-color $transition-fast;
+
+  &.level-critical { border-left: 3px solid $color-expense; }
+  &.level-high     { border-left: 3px solid #F59E0B; }
+  &.level-medium   { border-left: 3px solid $color-accent; }
+}
+
+.attentionIcon {
+  @include flex-center;
+  flex-shrink: 0;
+  width      : 28px;
+  height     : 28px;
+  border-radius: $radius-sm;
+
+  &.icon-critical { color: $color-expense;  background: $color-expense-bg; }
+  &.icon-high     { color: #F59E0B; background: rgba(245,158,11,0.1); }
+  &.icon-medium   { color: $color-accent-light; background: $color-accent-dim; }
+}
+
+.attentionInfo { @include flex-col; gap: 2px; flex: 1; min-width: 0; }
+
+.attentionTitle {
+  font-size  : 0.875rem;
+  font-weight: 500;
+  color      : $color-text-primary;
+  overflow   : hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attentionCategory {
+  font-size: 0.72rem;
+  color    : $color-text-muted;
+}
+
+.attentionRight  { @include flex-col; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+
+.attentionAmount {
+  font-size  : 0.9rem;
+  font-weight: 500;
+  color      : $color-text-primary;
+}
+
+.attentionChange {
+  font-size  : 0.7rem;
+  font-family: $font-mono;
+  font-weight: 600;
+
+  &.changeUp   { color: $color-expense; }
+  &.changeDown { color: $color-income; }
+}
+
+// ---- Comparativo ----
+.compareCard {
+  @include card;
+  @include flex-col;
+  gap    : $space-4;
+  padding: $space-5 $space-6;
+}
+
+.compareList {
+  @include flex-col;
+  gap      : $space-1;
+  max-height: 420px;
+  overflow-y: auto;
+
+  @include scrollbar;
+}
+
+.compareGroup { @include flex-col; gap: $space-1; margin-bottom: $space-3; }
+
+.compareGroupLabel {
+  font-size     : 0.65rem;
+  font-weight   : 700;
+  color         : $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding       : $space-2 0;
+  border-bottom : 1px solid $color-border;
+  margin-bottom : $space-1;
+}
+
+.compareRow {
+  @include flex-between;
+  gap          : $space-4;
+  padding      : $space-3 $space-4;
+  border-radius: $radius-md;
+  background   : rgba(255,255,255,0.02);
+  border       : 1px solid transparent;
+  flex-wrap    : wrap;
+  transition   : border-color $transition-fast;
+
+  &:hover { border-color: $color-border; }
+}
+
+.compareInfo { @include flex-col; gap: 2px; min-width: 120px; }
+
+.compareTitle {
+  font-size  : 0.85rem;
+  font-weight: 500;
+  color      : $color-text-primary;
+}
+
+.compareCategory {
+  font-size: 0.72rem;
+  color    : $color-text-muted;
+}
+
+.compareValues {
+  display    : flex;
+  align-items: center;
+  gap        : $space-4;
+  flex-wrap  : wrap;
+}
+
+.compareMonth   { @include flex-col; align-items: flex-end; gap: 2px; }
+.compareMonthLabel {
+  font-size     : 0.65rem;
+  color         : $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.comparePrev    { font-size: 0.85rem; color: $color-text-muted; }
+.compareCurrent { font-size: 0.85rem; color: $color-text-primary; font-weight: 500; }
+
+.compareArrow   { color: $color-text-muted; font-size: 0.75rem; }
+
+.compareBadge {
+  @include flex-center;
+  gap          : 3px;
+  padding      : 3px $space-2;
+  border-radius: $radius-full;
+  font-size    : 0.72rem;
+  font-weight  : 600;
+  font-family  : $font-mono;
+  min-width    : 64px;
+  justify-content: center;
+}
+
+.trendGood   { background: $color-income-bg;  color: $color-income;  border: 1px solid $color-income-border; }
+.trendBad    { background: $color-expense-bg; color: $color-expense; border: 1px solid $color-expense-border; }
+.trendStable { background: rgba(255,255,255,0.04); color: $color-text-muted; border: 1px solid $color-border; }
+
+// ---- Donut legend ----
+.donutLegend { @include flex-col; gap: $space-1; }
+
+.donutLegendItem {
+  display    : flex;
+  align-items: center;
+  gap        : $space-2;
+}
+
+.donutDot {
+  width        : 8px;
+  height       : 8px;
+  border-radius: $radius-full;
+  flex-shrink  : 0;
+}
+
+.donutLabel {
+  font-size: 0.75rem;
+  color    : $color-text-secondary;
+  flex     : 1;
+}
+
+.donutPct {
+  font-size: 0.72rem;
+  color    : $color-text-muted;
+}
+
+// ---- Estados ----
+.emptyMsg {
+  font-size : 0.8rem;
+  color     : $color-text-muted;
+  text-align: center;
+  padding   : $space-6;
+}
+
+.errorState {
+  @include flex-center;
+  @include flex-col;
+  gap       : $space-3;
+  padding   : $space-16;
+  color     : $color-expense;
+  opacity   : 0.7;
+  text-align: center;
+  font-size : 0.9rem;
+}
+
+.loadingGrid {
+  display              : grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap                  : $space-4;
+}
+
+.skeletonBlock {
+  height        : 180px;
+  border-radius : $radius-lg;
+
+  &:first-child, &:last-child { grid-column: 1 / -1; height: 120px; }
+}

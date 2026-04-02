@@ -1,10 +1,14 @@
 import type { TransactionFilter, TransactionType } from '@/types';
 import styles from './Sidebar.module.scss';
-import { LayoutDashboard, ArrowDownCircle, ArrowUpCircle, List } from 'lucide-react';
+import { LayoutDashboard, ArrowDownCircle, ArrowUpCircle, List, BarChart2 } from 'lucide-react';
+
+export type AppView = 'dashboard' | 'analytics';
 
 interface SidebarProps {
-  activeFilter : TransactionFilter;
-  onFilter     : (filter: TransactionFilter) => void;
+  activeFilter  : TransactionFilter;
+  onFilter      : (filter: TransactionFilter) => void;
+  activeView    : AppView;
+  onViewChange  : (view: AppView) => void;
 }
 
 interface NavItem {
@@ -41,7 +45,7 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export function Sidebar({ activeFilter, onFilter }: SidebarProps) {
+export function Sidebar({ activeFilter, onFilter, activeView, onViewChange }: SidebarProps) {
   const isActive = (filter: TransactionFilter): boolean =>
     JSON.stringify(filter) === JSON.stringify(activeFilter);
 
@@ -65,6 +69,17 @@ export function Sidebar({ activeFilter, onFilter }: SidebarProps) {
           </button>
         ))}
       </nav>
+
+      <div className={styles.viewSection}>
+        <span className={styles.navLabel}>Análises</span>
+        <button
+          className={`${styles.navItem} ${activeView === 'analytics' ? styles.active : ''}`}
+          onClick={() => onViewChange('analytics')}
+        >
+          <span className={styles.navIcon}><BarChart2 size={16} /></span>
+          Analytics
+        </button>
+      </div>
 
       <div className={styles.footer}>
         <span className={styles.version}>v1.0.0</span>
