@@ -8,6 +8,7 @@ import type {
 } from '@/types/analytics';
 import { formatCurrency } from '@/utils/format';
 import styles from './AnalyticsDashboard.module.scss';
+import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import {
   BarChart, Bar, Cell,
   PieChart, Pie, Tooltip as PieTooltip,
@@ -190,7 +191,7 @@ function ComparisonTable({ items }: { items: TransactionComparison[] }) {
 // ---- Componente principal ----
 
 export function AnalyticsDashboard() {
-  const { overview } = useAnalytics();
+  const { overview, period, setPeriod } = useAnalytics();
   const data = overview.data;
   const isLoading = overview.status === 'loading' || overview.status === 'idle';
 
@@ -259,6 +260,7 @@ export function AnalyticsDashboard() {
           <h1 className={styles.pageTitle}>Analytics</h1>
           <p className={styles.pageSubtitle}>Inteligência financeira baseada no seu histórico</p>
         </div>
+        <PeriodSelector value={period} onChange={setPeriod} />
       </header>
 
       {/* Grid principal */}

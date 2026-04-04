@@ -1,0 +1,28 @@
+.selector {
+  display       : flex;
+  align-items   : center;
+  gap           : 2px;
+  background    : rgba(255,255,255,0.03);
+  border        : 1px solid $color-border-medium;
+  border-radius : $radius-md;
+  padding       : 3px;
+}
+
+.btn {
+  padding      : $space-1 $space-3;
+  border-radius: $radius-sm;
+  font-size    : 0.75rem;
+  font-weight  : 600;
+  font-family  : $font-mono;
+  color        : $color-text-muted;
+  transition   : all $transition-fast;
+  white-space  : nowrap;
+
+  &:hover { color: $color-text-secondary; background: rgba(255,255,255,0.05); }
+
+  &.active {
+    background : $color-accent-dim;
+    color      : $color-accent-light;
+    border     : 1px solid rgba($color-accent, 0.25);
+  }
+}

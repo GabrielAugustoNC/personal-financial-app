@@ -22,7 +22,7 @@ func NewAnalyticsService(repo interfaces.AnalyticsRepository) interfaces.Analyti
 // GetOverview agrega todas as métricas em paralelo e calcula a projeção.
 // Analogia .NET: Task.WhenAll(task1, task2, task3) — aqui feito sequencialmente
 // por simplicidade, mas pode ser paralelizado com goroutines se necessário.
-func (s *AnalyticsService) GetOverview(ctx context.Context) (*models.AnalyticsOverview, error) {
+func (s *AnalyticsService) GetOverview(ctx context.Context, months int) (*models.AnalyticsOverview, error) {
 	comparison, err := s.repo.GetMonthComparison(ctx)
 	if err != nil {
 		return nil, err
@@ -33,8 +33,8 @@ func (s *AnalyticsService) GetOverview(ctx context.Context) (*models.AnalyticsOv
 		return nil, err
 	}
 
-	// 4 meses: 3 completos anteriores + mês atual (para o gráfico de evolução)
-	evolution, err := s.repo.GetMonthlyEvolution(ctx, 4)
+	// months + 1 para incluir mês atual no cálculo da projeção
+	evolution, err := s.repo.GetMonthlyEvolution(ctx, months)
 	if err != nil {
 		return nil, err
 	}

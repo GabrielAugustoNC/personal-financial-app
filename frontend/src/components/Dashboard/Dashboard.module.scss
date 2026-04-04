@@ -37,6 +37,47 @@
   gap        : $space-3;
 }
 
+
+.headerLeft { @include flex-col; gap: 2px; }
+
+// ---- Quick filters (Todas / Receitas / Despesas) ----
+.quickFilters {
+  display    : flex;
+  align-items: center;
+  gap        : $space-1;
+  background : rgba(255,255,255,0.03);
+  border     : 1px solid $color-border-medium;
+  border-radius: $radius-md;
+  padding    : 3px;
+}
+
+.quickBtn {
+  @include flex-center;
+  gap          : $space-1;
+  padding      : $space-2 $space-3;
+  border-radius: $radius-sm;
+  font-size    : 0.8rem;
+  font-weight  : 500;
+  color        : $color-text-muted;
+  transition   : all $transition-fast;
+  white-space  : nowrap;
+
+  &:hover { color: $color-text-secondary; background: rgba(255,255,255,0.04); }
+
+  &.quickActive {
+    &.quick-default { background: $color-accent-dim; color: $color-accent-light; border: 1px solid rgba($color-accent, 0.25); }
+    &.quick-income  { background: $color-income-bg;  color: $color-income;       border: 1px solid $color-income-border; }
+    &.quick-expense { background: $color-expense-bg; color: $color-expense;      border: 1px solid $color-expense-border; }
+  }
+}
+
+.divider {
+  width     : 1px;
+  height    : 24px;
+  background: $color-border-medium;
+  flex-shrink: 0;
+}
+
 .filterBtn {
   @include btn-base;
   position   : relative;
@@ -182,7 +223,6 @@
   letter-spacing: 0.06em;
 }
 
-		   
 .chartCard {
   @include card;
   @include flex-col;
@@ -190,7 +230,6 @@
   padding: $space-6;
 }
 
-		
 .listCard {
   @include card;
   @include flex-col;
@@ -210,4 +249,16 @@
   border       : 1px solid $color-border;
   border-radius: $radius-full;
   padding      : 2px $space-3;
+}
+
+.chartHeader {
+  @include flex-between;
+  align-items: center;
+}
+
+.emptyChart {
+  font-size : 0.8rem;
+  color     : $color-text-muted;
+  text-align: center;
+  padding   : $space-8;
 }

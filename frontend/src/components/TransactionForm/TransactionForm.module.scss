@@ -1,67 +1,65 @@
 .overlay {
-  position        : fixed;
-  inset           : 0;
-  background      : rgba(0, 0, 0, 0.75);
-  backdrop-filter : blur(4px);
-  z-index         : 100;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 100;
   @include flex-center;
-  padding         : $space-4;
+  padding: $space-4;
 }
 
 .modal {
-  width         : 100%;
-  max-width     : 480px;
-  background    : $color-bg-modal;
-  border        : 1px solid $color-border-medium;
-  border-radius : $radius-xl;
-  box-shadow    : $shadow-modal;
-  overflow      : hidden;
+  width: 100%; max-width: 540px;
+  background: $color-bg-modal;
+  border: 1px solid $color-border-medium;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-modal;
+  overflow: hidden;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
 }
 
-// ---- Header com abas ----
+// ---- Header / Tabs ----
 .modalHeader {
   @include flex-between;
-  padding      : $space-4 $space-6;
+  padding: $space-4 $space-6;
   border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
 }
 
 .tabs {
-  display    : flex;
-  align-items: center;
-  gap        : $space-1;
-  background : rgba(255,255,255,0.04);
-  border     : 1px solid $color-border-medium;
+  display: flex; align-items: center; gap: $space-1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid $color-border-medium;
   border-radius: $radius-md;
-  padding    : 3px;
+  padding: 3px;
 }
 
 .tab {
   @include flex-center;
-  gap          : $space-1;
-  padding      : $space-2 $space-4;
+  gap: $space-1;
+  padding: $space-2 $space-3;
   border-radius: $radius-sm;
-  font-size    : 0.82rem;
-  font-weight  : 500;
-  color        : $color-text-muted;
-  transition   : all $transition-fast;
+  font-size: 0.8rem; font-weight: 500;
+  color: $color-text-muted;
+  transition: all $transition-fast;
 
   &:hover { color: $color-text-secondary; }
 
   &.tabActive {
-    background : $color-accent-dim;
-    color      : $color-accent-light;
-    border     : 1px solid rgba($color-accent, 0.25);
+    background: $color-accent-dim;
+    color: $color-accent-light;
+    border: 1px solid rgba($color-accent, 0.25);
   }
 }
 
 .closeBtn {
   @include flex-center;
-  width         : 32px;
-  height        : 32px;
-  border-radius : $radius-md;
-  color         : $color-text-muted;
-  transition    : all $transition-fast;
-  flex-shrink   : 0;
+  width: 32px; height: 32px;
+  border-radius: $radius-md;
+  color: $color-text-muted;
+  transition: all $transition-fast;
+  flex-shrink: 0;
 
   &:hover { background: rgba(255,255,255,0.06); color: $color-text-secondary; }
 }
@@ -69,36 +67,32 @@
 // ---- Formulário manual ----
 .form {
   @include flex-col;
-  gap    : $space-5;
+  gap: $space-5;
   padding: $space-6;
+  overflow-y: auto;
+  @include scrollbar;
 }
 
 .typeToggle {
-  display              : grid;
-  grid-template-columns: 1fr 1fr;
-  gap                  : $space-2;
-  background           : $color-bg-input;
-  border               : 1px solid $color-border-medium;
-  border-radius        : $radius-md;
-  padding              : $space-1;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: $space-2;
+  background: $color-bg-input;
+  border: 1px solid $color-border-medium;
+  border-radius: $radius-md;
+  padding: $space-1;
 }
 
 .typeOption {
   @include flex-center;
-  gap          : $space-2;
-  padding      : $space-3;
+  gap: $space-2; padding: $space-3;
   border-radius: $radius-sm;
-  font-size    : 0.875rem;
-  font-weight  : 500;
-  color        : $color-text-muted;
-  cursor       : pointer;
-  transition   : all $transition-fast;
-  user-select  : none;
+  font-size: 0.875rem; font-weight: 500;
+  color: $color-text-muted;
+  cursor: pointer; transition: all $transition-fast;
+  user-select: none;
 
   input[type='radio'] { display: none; }
-
   &:hover { color: $color-text-secondary; }
-
   &.typeActive {
     &.income  { background: $color-income-bg;  color: $color-income;  border: 1px solid $color-income-border; }
     &.expense { background: $color-expense-bg; color: $color-expense; border: 1px solid $color-expense-border; }
@@ -106,300 +100,310 @@
 }
 
 .field { @include flex-col; gap: $space-2; }
-
-.row {
-  display              : grid;
-  grid-template-columns: 1fr 1fr;
-  gap                  : $space-4;
-}
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: $space-4; }
 
 .label {
-  font-size     : 0.75rem;
-  font-weight   : 600;
-  color         : $color-text-secondary;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.75rem; font-weight: 600;
+  color: $color-text-secondary;
+  text-transform: uppercase; letter-spacing: 0.05em;
 }
 
-.optional {
-  font-weight    : 400;
-  text-transform : none;
-  letter-spacing : 0;
-  color          : $color-text-muted;
-}
+.optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: $color-text-muted; }
 
 .input    { @include input-base; }
-.textarea {
-  @include input-base;
-  resize    : vertical;
-  min-height: 64px;
-  line-height: 1.5;
-}
-.select {
-  @include input-base;
-  appearance: none;
-  cursor    : pointer;
-
+.textarea { @include input-base; resize: vertical; min-height: 64px; line-height: 1.5; }
+.select   { @include input-base; appearance: none; cursor: pointer;
   option { background: $color-bg-card; color: $color-text-primary; }
 }
 
 .error {
-  font-size    : 0.8rem;
-  color        : $color-expense;
-  background   : $color-expense-bg;
-  border       : 1px solid $color-expense-border;
+  font-size: 0.8rem; color: $color-expense;
+  background: $color-expense-bg;
+  border: 1px solid $color-expense-border;
   border-radius: $radius-md;
-  padding      : $space-3 $space-4;
+  padding: $space-3 $space-4;
 }
 
 .formActions {
   @include flex-between;
-  gap        : $space-3;
-  padding-top: $space-2;
+  gap: $space-3; padding-top: $space-2;
+  flex-shrink: 0;
 }
 
 .cancelBtn {
   @include btn-base;
-  color      : $color-text-secondary;
-  background : rgba(255,255,255,0.04);
-  border     : 1px solid $color-border-medium;
-  flex       : 1;
-  justify-content: center;
-
+  color: $color-text-secondary;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid $color-border-medium;
+  flex: 1; justify-content: center;
   &:hover { background: rgba(255,255,255,0.07); }
 }
 
 .submitBtn {
-  @include btn-base;
-  flex            : 2;
-  justify-content : center;
-  font-size       : 0.9rem;
-
+  @include btn-base; flex: 2; justify-content: center; font-size: 0.9rem;
   &.income  { background: $color-income;  color: #001a12; &:hover:not(:disabled) { filter: brightness(1.1); } }
   &.expense { background: $color-expense; color: #1a0008; &:hover:not(:disabled) { filter: brightness(1.1); } }
 }
 
 .applyBtn {
-  @include btn-base;
-  flex            : 2;
-  justify-content : center;
-  background      : $color-accent;
-  color           : #fff;
-
+  @include btn-base; flex: 2; justify-content: center;
+  background: $color-accent; color: #fff;
   &:hover:not(:disabled) { filter: brightness(1.1); }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
-// ---- Painel de importação ----
-.importPanel {
+// ---- Aba Sugestões ----
+.suggestionsPanel {
   @include flex-col;
-  gap    : $space-4;
-  padding: $space-6;
+  gap: $space-4;
+  padding: $space-5 $space-6;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
-.dropzone {
+.sugHeader {
+  @include flex-between;
+  align-items: flex-start;
+  gap: $space-4;
+  flex-shrink: 0;
+}
+
+.sugDesc {
+  font-size: 0.8rem;
+  color: $color-text-muted;
+  line-height: 1.5;
+  max-width: 260px;
+}
+
+.sugSelectAll {
+  display: flex; align-items: center; gap: $space-2;
+  flex-shrink: 0;
+}
+
+.selectAllBtn {
+  font-size: 0.72rem; font-weight: 500;
+  color: $color-accent-light;
+  padding: 2px $space-2;
+  border-radius: $radius-sm;
+  border: 1px solid rgba($color-accent, 0.2);
+  background: $color-accent-dim;
+  transition: all $transition-fast;
+  &:hover { filter: brightness(1.15); }
+}
+
+.sugList {
   @include flex-col;
-  @include flex-center;
-  gap          : $space-2;
-  padding      : $space-8 $space-6;
-  border        : 1.5px dashed $color-border-medium;
-  border-radius : $radius-lg;
-  cursor        : pointer;
-  transition    : all $transition-base;
-  text-align    : center;
+  gap: $space-2;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 340px;
+  @include scrollbar;
+  padding-right: $space-1;
+}
 
-  &:hover {
-    border-color : $color-border-active;
-    background   : $color-accent-dim;
-  }
+.sugRow {
+  display: flex; align-items: center;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  border: 1px solid $color-border;
+  transition: all $transition-fast;
 
-  &.dropzoneLoaded {
-    padding      : $space-5 $space-6;
-    border-color : rgba($color-accent, 0.35);
-    background   : $color-accent-dim;
+  &.sugSelected {
+    &.income  { border-color: $color-income-border;  background: $color-income-bg; }
+    &.expense { border-color: $color-expense-border; background: $color-expense-bg; }
   }
+  &.sugUnselected { opacity: 0.45; }
+}
+
+// Checkbox customizado
+.sugCheckbox {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  input[type='checkbox'] {
+    position: absolute; opacity: 0; width: 16px; height: 16px; cursor: pointer; margin: 0;
+  }
+}
+
+.checkmark {
+  display: block; width: 16px; height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid $color-border-medium;
+  background: $color-bg-input;
+  transition: all $transition-fast;
+  position: relative;
+
+  .sugCheckbox input:checked ~ & {
+    background: $color-accent;
+    border-color: $color-accent;
+    &::after {
+      content: ''; position: absolute;
+      left: 4px; top: 1px;
+      width: 5px; height: 9px;
+      border: 2px solid #fff;
+      border-top: none; border-left: none;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.sugInfo { @include flex-col; gap: 2px; flex: 1; min-width: 0; }
+.sugTitle { font-size: 0.82rem; font-weight: 500; color: $color-text-primary; @include truncate; }
+.sugCategory { font-size: 0.7rem; color: $color-text-muted; }
+
+.sugFields {
+  display: flex; align-items: center; gap: $space-3;
+  flex-shrink: 0;
+}
+
+.sugFieldGroup { @include flex-col; gap: 2px; }
+
+.sugFieldLabel {
+  font-size: 0.62rem; font-weight: 600;
+  color: $color-text-muted;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.sugAmountWrapper {
+  display: flex; align-items: center; gap: 3px;
+}
+
+.sugPrefix { font-size: 0.7rem; color: $color-text-muted; }
+
+.sugInput {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid $color-border-medium;
+  border-radius: $radius-sm;
+  color: $color-text-primary;
+  font-family: $font-mono;
+  font-size: 0.78rem;
+  padding: 3px $space-2;
+  outline: none;
+  width: 76px;
+  transition: border-color $transition-fast;
+
+  &[type='date'] { width: 112px; color-scheme: dark; }
+  &:focus { border-color: $color-border-active; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &::-webkit-inner-spin-button { -webkit-appearance: none; }
+}
+
+.sugOriginal {
+  font-size: 0.68rem;
+  color: $color-text-muted;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sugErrorMsg {
+  font-size: 0.78rem; color: $color-expense;
+  background: $color-expense-bg;
+  border: 1px solid $color-expense-border;
+  border-radius: $radius-md;
+  padding: $space-2 $space-3;
+  flex-shrink: 0;
+}
+
+.sugLoading { @include flex-col; gap: $space-2; padding: $space-2 0; }
+.sugSkeleton { height: 56px; border-radius: $radius-md; }
+
+.sugEmpty {
+  @include flex-col; @include flex-center;
+  gap: $space-3; padding: $space-12;
+  color: $color-text-muted;
+  font-size: 0.85rem; text-align: center;
+}
+
+// ---- Aba Importação ----
+.importPanel { @include flex-col; gap: $space-4; padding: $space-6; overflow-y: auto; @include scrollbar; }
+
+.dropzone {
+  @include flex-col; @include flex-center;
+  gap: $space-2; padding: $space-8 $space-6;
+  border: 1.5px dashed $color-border-medium;
+  border-radius: $radius-lg; cursor: pointer;
+  transition: all $transition-base; text-align: center;
+  &:hover { border-color: $color-border-active; background: $color-accent-dim; }
+  &.dropzoneLoaded { padding: $space-5 $space-6; border-color: rgba($color-accent, 0.35); background: $color-accent-dim; }
 }
 
 .fileInput { display: none; }
+.dropzoneIcon { color: $color-text-muted; margin-bottom: $space-1; .dropzoneLoaded & { color: $color-accent-light; } }
+.dropzoneTitle { font-size: 0.875rem; font-weight: 500; color: $color-text-secondary; .dropzoneLoaded & { color: $color-accent-light; } }
+.dropzoneSub { font-size: 0.75rem; color: $color-text-muted; }
 
-.dropzoneIcon {
-  color        : $color-text-muted;
-  margin-bottom: $space-1;
-
-  .dropzoneLoaded & { color: $color-accent-light; }
-}
-
-.dropzoneTitle {
-  font-size  : 0.875rem;
-  font-weight: 500;
-  color      : $color-text-secondary;
-
-  .dropzoneLoaded & { color: $color-accent-light; }
-}
-
-.dropzoneSub {
-  font-size: 0.75rem;
-  color    : $color-text-muted;
-}
-
-// Hint de formato
-.formatHint {
-  background   : rgba(255,255,255,0.02);
-  border       : 1px solid $color-border;
-  border-radius: $radius-md;
-  overflow     : hidden;
-}
+.formatHint { background: rgba(255,255,255,0.02); border: 1px solid $color-border; border-radius: $radius-md; overflow: hidden; }
 
 .hintHeader {
-  display        : flex;
-  align-items    : center;
-  justify-content: space-between;
-  padding        : $space-2 $space-3;
-  border-bottom  : 1px solid $color-border;
+  @include flex-between;
+  padding: $space-2 $space-3;
+  border-bottom: 1px solid $color-border;
 }
 
-.hintTitle {
-  font-size     : 0.7rem;
-  font-weight   : 600;
-  color         : $color-text-muted;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
+.hintTitle { font-size: 0.7rem; font-weight: 600; color: $color-text-muted; text-transform: uppercase; letter-spacing: 0.06em; }
 
 .downloadBtn {
-  @include flex-center;
-  gap          : $space-1;
-  font-size    : 0.7rem;
-  font-weight  : 500;
-  color        : $color-accent-light;
-  padding      : 2px $space-2;
+  @include flex-center; gap: $space-1;
+  font-size: 0.7rem; font-weight: 500;
+  color: $color-accent-light;
+  padding: 2px $space-2;
   border-radius: $radius-sm;
-  border       : 1px solid rgba($color-accent, 0.25);
-  background   : $color-accent-dim;
-  transition   : all $transition-fast;
-
-  &:hover {
-    background  : rgba($color-accent, 0.2);
-    border-color: rgba($color-accent, 0.4);
-  }
+  border: 1px solid rgba($color-accent, 0.25);
+  background: $color-accent-dim;
+  transition: all $transition-fast;
+  &:hover { background: rgba($color-accent, 0.2); }
 }
 
 .hintCode {
-  font-family: $font-mono;
-  font-size  : 0.72rem;
-  color      : $color-text-secondary;
-  padding    : $space-3;
-  line-height: 1.6;
-  white-space: pre;
-  overflow-x : auto;
-
+  font-family: $font-mono; font-size: 0.72rem;
+  color: $color-text-secondary; padding: $space-3;
+  line-height: 1.6; white-space: pre; overflow-x: auto;
   @include scrollbar;
 }
 
-// Preview dos itens
-.previewList {
-  @include flex-col;
-  gap       : $space-1;
-  max-height: 180px;
-}
+.previewList { @include flex-col; gap: $space-1; max-height: 180px; }
 
 .previewItem {
-  @include flex-between;
-  gap          : $space-3;
-  padding      : $space-2 $space-3;
+  @include flex-between; gap: $space-3;
+  padding: $space-2 $space-3;
   border-radius: $radius-md;
-  background   : rgba(255,255,255,0.02);
-  border       : 1px solid $color-border;
-
+  background: rgba(255,255,255,0.02);
+  border: 1px solid $color-border;
   &.income .previewDot  { background: $color-income; }
   &.expense .previewDot { background: $color-expense; }
 }
 
-.previewDot {
-  width        : 7px;
-  height       : 7px;
-  border-radius: $radius-full;
-  flex-shrink  : 0;
-}
-
-.previewInfo {
-  @include flex-col;
-  gap : 2px;
-  flex: 1;
-  min-width: 0;
-}
-
-.previewTitle {
-  font-size  : 0.82rem;
-  font-weight: 500;
-  color      : $color-text-primary;
-  overflow   : hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.previewMeta {
-  font-size: 0.7rem;
-  color    : $color-text-muted;
-}
-
-.previewAmount {
-  font-size  : 0.82rem;
-  font-weight: 500;
-  white-space: nowrap;
-  flex-shrink: 0;
-
+.previewDot { width: 7px; height: 7px; border-radius: $radius-full; flex-shrink: 0; }
+.previewInfo { @include flex-col; gap: 2px; flex: 1; min-width: 0; }
+.previewTitle { font-size: 0.82rem; font-weight: 500; color: $color-text-primary; @include truncate; }
+.previewMeta { font-size: 0.7rem; color: $color-text-muted; }
+.previewAmount { font-size: 0.82rem; font-weight: 500; white-space: nowrap; flex-shrink: 0;
   .income &  { color: $color-income; }
   .expense & { color: $color-expense; }
 }
 
-.previewMore {
-  font-size : 0.75rem;
-  color     : $color-text-muted;
-  text-align: center;
-  padding   : $space-2;
-}
+.previewMore { font-size: 0.75rem; color: $color-text-muted; text-align: center; padding: $space-2; }
 
-// Erro de importação
 .importError {
-  @include flex-center;
-  gap          : $space-2;
-  font-size    : 0.8rem;
-  color        : $color-expense;
-  background   : $color-expense-bg;
-  border       : 1px solid $color-expense-border;
+  @include flex-center; gap: $space-2;
+  font-size: 0.8rem; color: $color-expense;
+  background: $color-expense-bg;
+  border: 1px solid $color-expense-border;
   border-radius: $radius-md;
-  padding      : $space-3 $space-4;
+  padding: $space-3 $space-4;
   justify-content: flex-start;
 }
 
-// Sucesso
 .importSuccess {
-  @include flex-col;
-  @include flex-center;
-  gap       : $space-3;
-  padding   : $space-8 $space-6;
+  @include flex-col; @include flex-center;
+  gap: $space-3; padding: $space-8 $space-6;
   text-align: center;
 }
 
 .successIcon  { color: $color-income; }
-
-.successTitle {
-  font-size  : 1rem;
-  font-weight: 600;
-  color      : $color-text-primary;
-}
-
-.successSub {
-  font-size: 0.85rem;
-  color    : $color-text-secondary;
-
-  strong { color: $color-income; }
-}
-
-.importActionsCenter {
-  display    : flex;
-  align-items: center;
-  gap        : $space-3;
-  margin-top : $space-2;
-}
+.successTitle { font-size: 1rem; font-weight: 600; color: $color-text-primary; }
+.successSub   { font-size: 0.85rem; color: $color-text-secondary; strong { color: $color-income; } }
+.importActionsCenter { display: flex; align-items: center; gap: $space-3; margin-top: $space-2; }
