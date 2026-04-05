@@ -1,3 +1,6 @@
+// Pacote models contém todas as entidades de domínio e DTOs da aplicação.
+// Define as estruturas de dados usadas entre as camadas e serializadas para JSON/BSON.
+// Analogia .NET: pasta Models com Entities, DTOs e ViewModels
 package models
 
 import (
@@ -8,19 +11,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// TransactionType é um tipo enumerado para o tipo da transação.
-// Analogia .NET: enum TransactionType
+// TransactionType representa os tipos possíveis de uma transação financeira.
+// Definido como string para serialização direta em JSON e MongoDB.
+// Analogia .NET: enum com [JsonConverter] para serialização como string
 type TransactionType string
 
+// Constantes de tipo de transação — evitam strings literais espalhadas pelo código
 const (
-	Income  TransactionType = "income"
-	Expense TransactionType = "expense"
+	Income  TransactionType = "income"  // Receita
+	Expense TransactionType = "expense" // Despesa
 )
 
-// Transaction representa uma transação financeira no banco de dados.
-// Analogia .NET: Entity class / EF Core model
-// Em Go, structs com métodos substituem classes. Tags `json` e `bson` controlam
-// a serialização (como [JsonPropertyName] e colunas do EF).
+// Transaction é a entidade principal que representa um lançamento financeiro.
+// Mapeada diretamente para a collection "transactions" no MongoDB.
+// As tags `bson` controlam os nomes dos campos no banco.
+// As tags `json` controlam a serialização na API REST.
+// Analogia .NET: classe de entidade com anotações [BsonElement] e [JsonPropertyName]
 type Transaction struct {
 	ID          primitive.ObjectID `json:"id"          bson:"_id,omitempty"`
 	Title       string             `json:"title"       bson:"title"`
@@ -33,9 +39,9 @@ type Transaction struct {
 	UpdatedAt   time.Time          `json:"updated_at"  bson:"updated_at"`
 }
 
-// CreateTransactionInput é o DTO de entrada para criar uma transação.
-// Analogia .NET: record CreateTransactionRequest / CreateTransactionDto
-// A tag `binding:"required"` funciona como [Required] do DataAnnotations.
+// CreateTransactionInput é o DTO de entrada para criação de uma nova transação.
+// Validado automaticamente pelo Gin via tags `binding`.
+// Analogia .NET: record CreateTransactionRequest com DataAnnotations ([Required], [Range])
 type CreateTransactionInput struct {
 	Title       string          `json:"title"       binding:"required,min=3,max=100"`
 	Amount      float64         `json:"amount"      binding:"required,gt=0"`
@@ -45,8 +51,9 @@ type CreateTransactionInput struct {
 	Date        time.Time       `json:"date"        binding:"required"`
 }
 
-// UpdateTransactionInput é o DTO para atualização parcial (PATCH semantics).
-// Analogia .NET: record UpdateTransactionRequest com campos opcionais
+// UpdateTransactionInput é o DTO para atualização parcial de uma transação.
+// Todos os campos são opcionais — apenas os enviados serão atualizados (PATCH semantics).
+// Analogia .NET: record UpdateTransactionRequest com campos anuláveis
 type UpdateTransactionInput struct {
 	Title       string          `json:"title"`
 	Amount      float64         `json:"amount"`
@@ -56,8 +63,9 @@ type UpdateTransactionInput struct {
 	Date        time.Time       `json:"date"`
 }
 
-// TransactionFilter é o DTO de filtros para listagem.
-// Analogia .NET: TransactionQueryParams / ISpecification<Transaction>
+// TransactionFilter define os parâmetros de filtragem para listagem de transações.
+// Vinculado via query string pelo Gin (tag `form`).
+// Analogia .NET: TransactionQueryParams com [FromQuery] no controller
 type TransactionFilter struct {
 	Type      TransactionType `form:"type"`
 	Category  string          `form:"category"`
@@ -66,8 +74,9 @@ type TransactionFilter struct {
 	EndDate   time.Time       `form:"end_date"   time_format:"2006-01-02"`
 }
 
-// TransactionSummary representa o resumo financeiro agregado.
-// Analogia .NET: TransactionSummaryViewModel / DTO de leitura
+// TransactionSummary é o DTO de resposta com o resumo financeiro agregado.
+// Calculado via aggregation pipeline no MongoDB.
+// Analogia .NET: TransactionSummaryViewModel retornado por um endpoint de relatório
 type TransactionSummary struct {
 	TotalIncome   float64 `json:"total_income"`
 	TotalExpenses float64 `json:"total_expenses"`
@@ -75,20 +84,21 @@ type TransactionSummary struct {
 	Count         int64   `json:"count"`
 }
 
-// FlexDate aceita dois formatos de data na importação:
-//   - String plana:          "2026-04-01" ou "2026-04-01T00:00:00Z"
-//   - MongoDB Extended JSON: { "$date": "2026-04-01T00:00:00Z" }
+// FlexDate é um tipo customizado que aceita dois formatos de data na importação:
+//   - String plana:           "2026-04-01" ou "2026-04-01T00:00:00Z"
+//   - MongoDB Extended JSON:  { "$date": "2026-04-01T00:00:00Z" }
 //
-// Analogia .NET: JsonConverter customizado — equivalente a implementar
-// JsonConverter<DateTime> com Read() tratando os dois casos.
+// Implementa json.Unmarshaler para tratamento transparente dos dois formatos.
+// Analogia .NET: JsonConverter<DateTime> customizado com override de Read()
 type FlexDate struct {
-	Value string
+	Value string // Valor da data normalizado como string ISO 8601
 }
 
-// UnmarshalJSON implementa json.Unmarshaler para o tipo FlexDate.
-// É chamado automaticamente pelo encoding/json durante o Decode().
+// UnmarshalJSON implementa a interface json.Unmarshaler.
+// Chamado automaticamente pelo encoding/json ao fazer Decode() de FlexDate.
+// Tenta primeiro desserializar como objeto MongoDB, depois como string plana.
 func (d *FlexDate) UnmarshalJSON(data []byte) error {
-	// Tenta desserializar como objeto { "$date": "..." }
+	// Tenta formato MongoDB Extended JSON: { "$date": "..." }
 	var obj struct {
 		Date string `json:"$date"`
 	}
@@ -97,7 +107,7 @@ func (d *FlexDate) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	// Tenta desserializar como string plana "2026-04-01" ou "2026-04-01T..."
+	// Tenta formato de string plana: "2026-04-01" ou "2026-04-01T..."
 	var str string
 	if err := json.Unmarshal(data, &str); err == nil {
 		d.Value = str
@@ -107,9 +117,10 @@ func (d *FlexDate) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("formato de data inválido: %s", string(data))
 }
 
-// ImportTransactionItem representa cada item do arquivo JSON de importação.
-// Aceita datas em formato string plana ou MongoDB Extended JSON.
-// Analogia .NET: record ImportDto com JsonConverter customizado
+// ImportTransactionItem é o DTO para cada item de um arquivo JSON de importação.
+// Compatível com exportações do MongoDB Compass e com arquivos editados manualmente.
+// A data é representada por FlexDate para aceitar os dois formatos suportados.
+// Analogia .NET: ImportDto com JsonConverter customizado aplicado ao campo de data
 type ImportTransactionItem struct {
 	Title       string          `json:"title"`
 	Amount      float64         `json:"amount"`
@@ -119,7 +130,8 @@ type ImportTransactionItem struct {
 	Date        FlexDate        `json:"date"`
 }
 
-// BulkImportResult é o DTO de resposta da importação em massa.
+// BulkImportResult é o DTO de resposta após uma importação em massa.
+// Informa quantos itens foram importados com sucesso e quais falharam.
 type BulkImportResult struct {
 	Imported int      `json:"imported"`
 	Failed   int      `json:"failed"`

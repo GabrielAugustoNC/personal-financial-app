@@ -1,8 +1,19 @@
+// ============================================================
+// TransactionList — lista de transações com skeleton, estado vazio e ações.
+// Cada linha exibe título, categoria, data, valor formatado e botões de editar/excluir.
+// Os botões de ação ficam ocultos e aparecem apenas no hover da linha.
+// ============================================================
+
 import type { Transaction } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
 import styles from './TransactionList.module.scss';
 import { Trash2, Pencil } from 'lucide-react';
 
+// Props da lista de transações:
+// - transactions: array de transações a exibir
+// - isLoading: ativa o skeleton durante carregamento
+// - onEdit: callback chamado ao clicar em editar (abre modal com dados pré-preenchidos)
+// - onDelete: callback chamado ao clicar em excluir (remove via API e recarrega)
 interface TransactionListProps {
   transactions : Transaction[];
   isLoading    : boolean;
@@ -10,6 +21,8 @@ interface TransactionListProps {
   onDelete     : (id: string) => void;
 }
 
+// SkeletonRow exibe uma linha placeholder animada durante o carregamento.
+// Mantém a proporção da linha real para evitar layout shift.
 function SkeletonRow() {
   return (
     <div className={styles.skeletonRow}>
@@ -23,12 +36,12 @@ function SkeletonRow() {
   );
 }
 
-export function TransactionList({
-  transactions,
-  isLoading,
-  onEdit,
-  onDelete,
-}: TransactionListProps) {
+// TransactionList renderiza o estado correto para cada situação:
+// 1. Carregando → 5 linhas skeleton
+// 2. Lista vazia → mensagem orientativa
+// 3. Com dados → linhas interativas com ações de editar e excluir
+export function TransactionList({ transactions, isLoading, onEdit, onDelete }: TransactionListProps) {
+  // Estado de carregamento: exibe 5 skeletons
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -37,6 +50,7 @@ export function TransactionList({
     );
   }
 
+  // Estado vazio: orienta o usuário a criar a primeira transação
   if (transactions.length === 0) {
     return (
       <div className={styles.empty}>
@@ -47,6 +61,7 @@ export function TransactionList({
     );
   }
 
+  // Estado com dados: lista com scroll limitado e ações por linha
   return (
     <div className={`${styles.container} scrollable`}>
       {transactions.map((transaction) => (
@@ -54,14 +69,17 @@ export function TransactionList({
           key={transaction.id}
           className={`${styles.row} ${styles[transaction.type]} fade-in`}
         >
+          {/* Indicador colorido: verde para receita, vermelho para despesa */}
           <div className={styles.dot} />
 
+          {/* Informações principais da transação */}
           <div className={styles.info}>
             <span className={styles.title}>{transaction.title}</span>
             <div className={styles.meta}>
               <span className={styles.category}>{transaction.category}</span>
               <span className={styles.sep}>·</span>
               <span className={styles.date}>{formatDate(transaction.date)}</span>
+              {/* Descrição opcional — exibida apenas quando preenchida */}
               {transaction.description && (
                 <>
                   <span className={styles.sep}>·</span>
@@ -71,8 +89,10 @@ export function TransactionList({
             </div>
           </div>
 
+          {/* Valor e botões de ação — ações visíveis apenas no hover */}
           <div className={styles.right}>
             <span className={`${styles.amount} mono`}>
+              {/* Prefixo − para despesas e + para receitas */}
               {transaction.type === 'expense' ? '−' : '+'}
               {formatCurrency(transaction.amount)}
             </span>

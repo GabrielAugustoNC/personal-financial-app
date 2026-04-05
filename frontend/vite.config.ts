@@ -18,9 +18,12 @@ export default defineConfig({
       scss: {
         // Injeta variáveis e mixins globalmente em todos os arquivos SCSS
         // Evita ter que importar em cada arquivo de componente
+        // @import injeta no escopo global compartilhado entre todos os arquivos SCSS.
+        // @use isolaria cada módulo — mixins não enxergariam as variáveis de outro módulo.
+        // Analogia Angular: stylePreprocessorOptions.includePaths no angular.json
         additionalData: `
-          @use "@/styles/variables" as *;
-          @use "@/styles/mixins" as *;
+          @import "@/styles/variables";
+          @import "@/styles/mixins";
         `,
       },
     },

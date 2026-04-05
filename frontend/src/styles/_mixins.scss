@@ -1,26 +1,34 @@
 // ============================================================
-// Mixins — utilitários de estilo reutilizáveis
+// Mixins SCSS — utilitários de estilo reutilizáveis.
+// Incluídos globalmente via vite.config.ts — disponíveis em todos os módulos SCSS.
+// Evitam duplicação de código e centralizam padrões visuais comuns.
 // ============================================================
-@use "variables" as *;
-// Layout
+
+// ---- Layout: flexbox ----
+
+// Centraliza conteúdo horizontal e verticalmente com flexbox
 @mixin flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+// Distribui espaço entre elementos (esquerda e direita)
 @mixin flex-between {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+// Empilha elementos verticalmente em coluna
 @mixin flex-col {
   display: flex;
   flex-direction: column;
 }
 
-// Card padrão da aplicação
+// ---- Componentes base ----
+
+// Estilo base de card — fundo, borda e raio padrão da aplicação
 @mixin card {
   background    : $color-bg-card;
   border        : 1px solid $color-border;
@@ -28,6 +36,7 @@
   transition    : border-color $transition-base, box-shadow $transition-base;
 }
 
+// Efeito de hover para cards — eleva visualmente o elemento
 @mixin card-hover {
   &:hover {
     border-color : $color-border-medium;
@@ -35,30 +44,25 @@
   }
 }
 
-// Scrollbar customizada (minimalista)
-@mixin scrollbar {
-  &::-webkit-scrollbar       { width: 4px; height: 4px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb {
-    background    : rgba(255, 255, 255, 0.16);
-    border-radius : 9999px;
-    &:hover { background: $color-text-muted; }
-  }
-}
+// ---- Utilitários de texto ----
 
-// Texto truncado com reticências
+// Trunca texto longo com reticências — requer width definida no container
 @mixin truncate {
   overflow      : hidden;
   text-overflow : ellipsis;
   white-space   : nowrap;
 }
 
-// Efeito de brilho colorido
+// ---- Efeitos visuais ----
+
+// Glow colorido ao redor de um elemento — usado em botões e badges de destaque
 @mixin glow($color) {
   box-shadow: 0 0 16px rgba($color, 0.3), 0 0 32px rgba($color, 0.1);
 }
 
-// Botão base
+// ---- Componentes reutilizáveis ----
+
+// Base para todos os botões da aplicação — reset de estilos nativos + padrão visual
 @mixin btn-base {
   display       : inline-flex;
   align-items   : center;
@@ -79,7 +83,7 @@
   }
 }
 
-// Input base
+// Base para todos os inputs e selects da aplicação
 @mixin input-base {
   width         : 100%;
   padding       : $space-3 $space-4;
@@ -102,7 +106,7 @@
   }
 }
 
-// Badge colorido (tipo de transação)
+// Badge colorido para tipo de transação (receita/despesa)
 @mixin badge($bg, $color, $border) {
   display       : inline-flex;
   align-items   : center;
@@ -110,13 +114,28 @@
   padding       : 2px $space-2;
   background    : $bg;
   border        : 1px solid $border;
-  border-radius : 9999px;
+  border-radius : $radius-full;
   color         : $color;
   font-size     : 0.75rem;
   font-weight   : 500;
 }
 
-// Media queries
+// ---- Scrollbar personalizada ----
+
+// Scrollbar minimalista compatível com WebKit (Chrome, Safari, Edge)
+@mixin scrollbar {
+  &::-webkit-scrollbar       { width: 4px; height: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background    : $color-border-strong;
+    border-radius : $radius-full;
+    &:hover { background: $color-text-muted; }
+  }
+}
+
+// ---- Media queries ----
+
+// Breakpoints responsivos para os três tamanhos principais de tela
 @mixin mobile  { @media (max-width: 640px)  { @content; } }
 @mixin tablet  { @media (max-width: 1024px) { @content; } }
 @mixin desktop { @media (min-width: 1025px) { @content; } }

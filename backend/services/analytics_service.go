@@ -1,3 +1,7 @@
+// Serviço de analytics — orquestra as queries do repositório e calcula a projeção.
+// O serviço executa as queries sequencialmente e compõe o AnalyticsOverview final.
+// A projeção é calculada em memória a partir dos dados de evolução mensal.
+// Analogia .NET: classe AnalyticsService : IAnalyticsService
 package services
 
 import (
@@ -8,42 +12,49 @@ import (
 	"github.com/user/financas-api/models"
 )
 
-// AnalyticsService orquestra os dados de analytics e calcula a projeção.
-// Analogia .NET: class AnalyticsService : IAnalyticsService
+// AnalyticsService implementa interfaces.AnalyticsService.
+// Orquestra múltiplas queries do repositório e aplica cálculos de projeção.
+// Analogia .NET: class AnalyticsService : IAnalyticsService com injeção de IAnalyticsRepository
 type AnalyticsService struct {
 	repo interfaces.AnalyticsRepository
 }
 
-// NewAnalyticsService é o construtor com injeção de dependência.
+// NewAnalyticsService cria uma instância do serviço com injeção de dependência.
+// Retorna a interface para manter o baixo acoplamento entre camadas.
 func NewAnalyticsService(repo interfaces.AnalyticsRepository) interfaces.AnalyticsService {
 	return &AnalyticsService{repo: repo}
 }
 
-// GetOverview agrega todas as métricas em paralelo e calcula a projeção.
-// Analogia .NET: Task.WhenAll(task1, task2, task3) — aqui feito sequencialmente
-// por simplicidade, mas pode ser paralelizado com goroutines se necessário.
+// GetOverview executa todas as queries analíticas e retorna o overview completo.
+// O parâmetro months controla o horizonte temporal dos gráficos (1 a 12 meses).
+// A projeção é calculada localmente com base nos dados de evolução mensal.
+// Analogia .NET: método de serviço compondo múltiplos repositórios e retornando ViewModel
 func (s *AnalyticsService) GetOverview(ctx context.Context, months int) (*models.AnalyticsOverview, error) {
+	// Busca o comparativo de transações entre o mês atual e o anterior
 	comparison, err := s.repo.GetMonthComparison(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	// Busca a distribuição de despesas por categoria no mês atual
 	breakdown, err := s.repo.GetCategoryBreakdown(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// months + 1 para incluir mês atual no cálculo da projeção
+	// Busca o histórico mensal com o número de meses solicitado pelo frontend
 	evolution, err := s.repo.GetMonthlyEvolution(ctx, months)
 	if err != nil {
 		return nil, err
 	}
 
+	// Busca as 6 despesas de maior atenção (por valor ou crescimento)
 	attention, err := s.repo.GetTopExpenses(ctx, 6)
 	if err != nil {
 		return nil, err
 	}
 
+	// Calcula a projeção do próximo mês em memória (sem acesso ao banco)
 	projection := s.calculateProjection(evolution)
 
 	return &models.AnalyticsOverview{
@@ -55,35 +66,40 @@ func (s *AnalyticsService) GetOverview(ctx context.Context, months int) (*models
 	}, nil
 }
 
-// calculateProjection estima o próximo mês com base na média dos 3 meses anteriores.
-// Exclui o mês atual do cálculo para não distorcer a média com dados parciais.
+// calculateProjection estima o saldo do próximo mês com base na média histórica.
+// Exclui o mês atual dos cálculos pois ele está incompleto (mês em andamento).
+// A tendência compara a projeção com o saldo atual: positiva, negativa ou neutra.
+// Analogia .NET: método privado com cálculos estatísticos simples sem acesso ao banco
 func (s *AnalyticsService) calculateProjection(evolution []models.MonthlyEvolution) models.BalanceProjection {
-	// Usa apenas os meses completos (exclui o último = mês atual)
+	// Usa apenas os meses completos — exclui o último (mês atual) dos cálculos
 	historicalMonths := evolution
 	if len(historicalMonths) > 1 {
 		historicalMonths = evolution[:len(evolution)-1]
 	}
 
+	// Retorna projeção neutra se não há histórico suficiente
 	if len(historicalMonths) == 0 {
 		return models.BalanceProjection{Trend: "neutral"}
 	}
 
+	// Soma receitas e despesas de todos os meses históricos
 	var totalIncome, totalExpenses float64
 	for _, m := range historicalMonths {
 		totalIncome += m.Income
 		totalExpenses += m.Expenses
 	}
 
-	count := float64(len(historicalMonths))
-	avgIncome := totalIncome / count
-	avgExpenses := totalExpenses / count
+	// Calcula as médias dividindo pelo número de meses históricos
+	count            := float64(len(historicalMonths))
+	avgIncome        := totalIncome / count
+	avgExpenses      := totalExpenses / count
 	estimatedBalance := avgIncome - avgExpenses
 
-	// Calcula tendência comparando a média histórica com o mês atual
+	// Calcula a variação percentual em relação ao saldo do mês atual
 	currentBalance := 0.0
 	if len(evolution) > 0 {
-		current := evolution[len(evolution)-1]
-		currentBalance = current.Income - current.Expenses
+		current        := evolution[len(evolution)-1]
+		currentBalance  = current.Income - current.Expenses
 	}
 
 	trendPct := 0.0
@@ -91,6 +107,7 @@ func (s *AnalyticsService) calculateProjection(evolution []models.MonthlyEvoluti
 		trendPct = math.Round(((estimatedBalance-currentBalance)/math.Abs(currentBalance))*1000) / 10
 	}
 
+	// Classifica a tendência com base no saldo estimado e na variação percentual
 	trend := "neutral"
 	switch {
 	case estimatedBalance > 0 && trendPct >= 0:

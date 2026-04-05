@@ -257,21 +257,20 @@ func (r *MongoAnalyticsRepository) GetMonthlyEvolution(ctx context.Context, mont
 		}
 	}
 
-	// Garante que todos os meses aparecem (mesmo sem transações)
+	// Monta a lista de meses em ordem cronológica, omitindo os sem transações.
+	// Meses zerados são ignorados para não poluir os gráficos com barras vazias.
 	evolution := make([]models.MonthlyEvolution, 0, months)
 	for i := months - 1; i >= 0; i-- {
 		t := time.Date(now.Year(), now.Month()-time.Month(i), 1, 0, 0, 0, 0, time.UTC)
 		key := fmt.Sprintf("%d-%02d", t.Year(), int(t.Month()))
 		if m, ok := monthMap[key]; ok {
-			m.Balance = math.Round((m.Income-m.Expenses)*100) / 100
-			m.Income = math.Round(m.Income*100) / 100
-			m.Expenses = math.Round(m.Expenses*100) / 100
-			evolution = append(evolution, *m)
-		} else {
-			evolution = append(evolution, models.MonthlyEvolution{
-				Month: monthNames[int(t.Month())],
-				Year:  t.Year(),
-			})
+			// Só inclui o mês se tiver pelo menos uma receita ou despesa
+			if m.Income > 0 || m.Expenses > 0 {
+				m.Balance  = math.Round((m.Income-m.Expenses)*100) / 100
+				m.Income   = math.Round(m.Income*100) / 100
+				m.Expenses = math.Round(m.Expenses*100) / 100
+				evolution  = append(evolution, *m)
+			}
 		}
 	}
 

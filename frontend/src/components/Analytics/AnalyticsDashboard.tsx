@@ -9,6 +9,7 @@ import type {
 import { formatCurrency } from '@/utils/format';
 import styles from './AnalyticsDashboard.module.scss';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { PERIOD_OPTIONS } from '@/types/wallet';
 import {
   BarChart, Bar, Cell,
   PieChart, Pie, Tooltip as PieTooltip,
@@ -220,6 +221,15 @@ export function AnalyticsDashboard() {
 
   if (!data) return null;
 
+  // Filtra meses sem dados (segunda linha de defesa — o backend já filtra,
+  // mas garantimos aqui caso algum mês zerado passe pela aggregation)
+  const activeEvolution = data.monthly_evolution.filter(
+    m => m.income > 0 || m.expenses > 0
+  );
+
+  // Rótulo legível do período atual para exibir no subtítulo
+  const periodLabel = PERIOD_OPTIONS.find(o => o.value === period)?.label ?? period;
+
   // Prepara dados do donut (top 6 categorias + "Outros")
   const donutData = (() => {
     const top = data.category_breakdown.slice(0, 6);
@@ -231,11 +241,13 @@ export function AnalyticsDashboard() {
   })();
 
   // Radial bar — savings rate por mês
-  const radialData = data.monthly_evolution.map(m => ({
+  const radialData = activeEvolution.map(m => ({
     name     : m.month,
     rate     : m.income > 0 ? Math.round(Math.max(0, ((m.income - m.expenses) / m.income) * 100)) : 0,
   }));
 
+  // Tooltip para gráficos monetários (barras e linha).
+  // Formata todos os valores como moeda — usado no BarChart e LineChart.
   const customTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number }> }) => {
     if (!active || !payload?.length) return null;
     return (
@@ -243,10 +255,23 @@ export function AnalyticsDashboard() {
         {payload.map((p, i) => (
           <div key={i} className={styles.tooltipRow}>
             <span>{p.name}</span>
-            <span className="mono">{typeof p.value === 'number' && p.value > 100
-              ? formatCurrency(p.value)
-              : `${p.value}%`
-            }</span>
+            <span className="mono">{formatCurrency(p.value)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Tooltip para o gráfico radial de taxa de poupança.
+  // Formata o valor como percentual — dataKey="rate" sempre é 0-100%.
+  const radialTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number }> }) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className={styles.tooltip}>
+        {payload.map((p, i) => (
+          <div key={i} className={styles.tooltipRow}>
+            <span>{p.name}</span>
+            <span className="mono">{p.value}%</span>
           </div>
         ))}
       </div>
@@ -258,7 +283,7 @@ export function AnalyticsDashboard() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.pageTitle}>Analytics</h1>
-          <p className={styles.pageSubtitle}>Inteligência financeira baseada no seu histórico</p>
+          <p className={styles.pageSubtitle}>Exibindo dados dos últimos {periodLabel} · meses sem dados são ignorados</p>
         </div>
         <PeriodSelector value={period} onChange={setPeriod} />
       </header>
@@ -274,8 +299,9 @@ export function AnalyticsDashboard() {
         {/* Gráfico de barras — evolução mensal */}
         <div className={`${styles.card} ${styles.span2}`}>
           <span className={styles.sectionLabel}>Evolução mensal</span>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={data.monthly_evolution} barGap={4} barCategoryGap="28%">
+          {activeEvolution.length === 0 && <p className={styles.emptyMsg}>Sem dados no período selecionado.</p>}
+          {activeEvolution.length > 0 && <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={activeEvolution} barGap={4} barCategoryGap="28%">
               <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
               <XAxis dataKey="month" tick={{ fill: '#8888AA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={(v: number) => `R$${(v/1000).toFixed(0)}k`} tick={{ fill: '#8888AA', fontSize: 11 }} axisLine={false} tickLine={false} width={48} />
@@ -284,7 +310,7 @@ export function AnalyticsDashboard() {
               <Bar dataKey="income"   name="Receitas" fill="#00D9A3" radius={[4, 4, 0, 0]} />
               <Bar dataKey="expenses" name="Despesas" fill="#FF5B7F" radius={[4, 4, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer>}
         </div>
 
         {/* Donut — categorias de despesa */}
@@ -332,8 +358,9 @@ export function AnalyticsDashboard() {
         {/* Linha — saldo mensal */}
         <div className={`${styles.card} ${styles.span2}`}>
           <span className={styles.sectionLabel}>Saldo mês a mês</span>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={data.monthly_evolution}>
+          {activeEvolution.length === 0 && <p className={styles.emptyMsg}>Sem dados no período selecionado.</p>}
+          {activeEvolution.length > 0 && <ResponsiveContainer width="100%" height={180}>
+            <LineChart data={activeEvolution}>
               <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
               <XAxis dataKey="month" tick={{ fill: '#8888AA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={(v: number) => `R$${(v/1000).toFixed(0)}k`} tick={{ fill: '#8888AA', fontSize: 11 }} axisLine={false} tickLine={false} width={48} />
@@ -345,7 +372,7 @@ export function AnalyticsDashboard() {
                 activeDot={{ r: 6 }}
               />
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer>}
         </div>
 
         {/* Radial — savings rate */}
@@ -368,10 +395,7 @@ export function AnalyticsDashboard() {
                   <Cell key={i} fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]} />
                 ))}
               </RadialBar>
-              <PieTooltip
-                formatter={(value: number, name: string) => [`${value}%`, name]}
-                contentStyle={{ background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 12 }}
-              />
+              <PieTooltip content={radialTooltip as React.FC} />
               <Legend
                 iconSize={8}
                 wrapperStyle={{ fontSize: 11, color: '#8888AA' }}

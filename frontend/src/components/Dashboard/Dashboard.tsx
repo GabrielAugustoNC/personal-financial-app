@@ -5,9 +5,11 @@ import type {
   UpdateTransactionInput,
   TransactionFilter,
   TransactionType,
+  TransactionSummary,
 } from '@/types';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '@/types';
 import type { Period }          from '@/types/wallet';
+import { PERIOD_DAYS }          from '@/types/wallet';
 import { useTransactions }      from '@/hooks/useTransactions';
 import { SummaryCards }         from '@/components/SummaryCard/SummaryCard';
 import { TransactionList }      from '@/components/TransactionList/TransactionList';
@@ -54,18 +56,45 @@ function draftToFilter(d: FilterDraft): TransactionFilter {
   if (d.end_date)   f.end_date   = d.end_date;
   return f;
 }
+
 function countActiveFilters(d: FilterDraft): number {
   return [d.type, d.category, d.title, d.start_date, d.end_date].filter(Boolean).length;
 }
 
-// Filtra transactions pelo período selecionado
-function filterByPeriod(transactions: Transaction[], period: Period): Transaction[] {
-  const now = new Date();
+// Retorna o timestamp de corte para o período selecionado.
+// Usa PERIOD_DAYS para garantir dias exatos (não meses calendário).
+// Exemplo: '1w' → Date de 7 dias atrás às 00:00:00.
+function getPeriodCutoff(period: Period): Date {
   const cutoff = new Date();
-  if (period === '1w') cutoff.setDate(now.getDate() - 7);
-  else if (period === '1m') cutoff.setMonth(now.getMonth() - 1);
-  else cutoff.setFullYear(now.getFullYear() - 1);
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - PERIOD_DAYS[period]);
+  return cutoff;
+}
+
+// Filtra o array de transações para incluir apenas as dentro do período selecionado.
+// A comparação usa o campo date da transação vs o timestamp de corte calculado.
+function filterByPeriod(transactions: Transaction[], period: Period): Transaction[] {
+  const cutoff = getPeriodCutoff(period);
   return transactions.filter(t => new Date(t.date) >= cutoff);
+}
+
+// Calcula o resumo financeiro (totais e contagem) a partir de um array de transações.
+// Usado para recomputar os cards quando o período ou filtro mudar — sem nova chamada à API.
+function computeSummary(transactions: Transaction[]): TransactionSummary {
+  let totalIncome   = 0;
+  let totalExpenses = 0;
+
+  for (const t of transactions) {
+    if (t.type === 'income')  totalIncome   += t.amount;
+    else                       totalExpenses += t.amount;
+  }
+
+  return {
+    total_income   : Math.round(totalIncome   * 100) / 100,
+    total_expenses : Math.round(totalExpenses * 100) / 100,
+    balance        : Math.round((totalIncome - totalExpenses) * 100) / 100,
+    count          : transactions.length,
+  };
 }
 
 export function Dashboard() {
@@ -89,19 +118,39 @@ export function Dashboard() {
     draft.type === 'expense' ? EXPENSE_CATEGORIES :
     [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
 
-  // Dados do gráfico filtrados pelo período
+  // Transações filtradas pelo período selecionado.
+  // Recalculado via useMemo para evitar iterações desnecessárias a cada render.
+  const periodFiltered = useMemo(
+    () => filterByPeriod(transactions.data ?? [], chartPeriod),
+    [transactions.data, chartPeriod]
+  );
+
+  // Resumo financeiro calculado localmente a partir das transações do período.
+  // Substitui o summary da API para que os cards reflitam o filtro de período.
+  const periodSummary = useMemo(
+    () => computeSummary(periodFiltered),
+    [periodFiltered]
+  );
+
+  // Dados do gráfico de área preparados a partir das transações filtradas pelo período.
+  // Ordenados cronologicamente e limitados a 30 pontos para legibilidade.
   const chartData = useMemo(() => {
-    const filtered = filterByPeriod(transactions.data ?? [], chartPeriod);
-    return filtered
+    return periodFiltered
       .slice()
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-20)
+      .slice(-30)
       .map(t => ({
         date    : formatDate(t.date),
         income  : t.type === 'income'  ? t.amount : 0,
         expense : t.type === 'expense' ? t.amount : 0,
       }));
-  }, [transactions.data, chartPeriod]);
+  }, [periodFiltered]);
+
+  // Ao mudar o período, mantém o filtro de tipo/categoria já aplicado.
+  // Os cards e o gráfico atualizam automaticamente via useMemo.
+  function handlePeriodChange(period: Period): void {
+    setChartPeriod(period);
+  }
 
   function handleQuickFilter(filter: TransactionFilter): void {
     setQuickFilter(filter);
@@ -109,24 +158,29 @@ export function Dashboard() {
     setFilterOpen(false);
     setFilter(filter);
   }
+
   function isQuickActive(filter: TransactionFilter): boolean {
     return JSON.stringify(filter) === JSON.stringify(quickFilter);
   }
+
   function handleDraftChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
     const { name, value } = e.target;
     if (name === 'type') setDraft(prev => ({ ...prev, type: value as TransactionType | '', category: '' }));
     else setDraft(prev => ({ ...prev, [name]: value }));
   }
+
   function applyFilters(): void {
     setQuickFilter({});
     setFilter(draftToFilter(draft));
     setFilterOpen(false);
   }
+
   function clearFilters(): void {
     setDraft(EMPTY_DRAFT);
     setQuickFilter({});
     setFilter({});
   }
+
   function openCreate(): void { setEditTarget(null); setModalMode('create'); }
   function openEdit(t: Transaction): void { setEditTarget(t); setModalMode('edit'); }
   function closeModal(): void { setModalMode(null); setEditTarget(null); }
@@ -136,7 +190,8 @@ export function Dashboard() {
     else await createTransaction(input as CreateTransactionInput);
   }
 
-  const isLoading = transactions.status === 'loading';
+  // Carregando se o estado de transações ainda não resolveu
+  const isLoading = transactions.status === 'loading' || transactions.status === 'idle';
 
   return (
     <div className={styles.dashboard}>
@@ -144,7 +199,9 @@ export function Dashboard() {
         <div className={styles.headerLeft}>
           <h1 className={styles.pageTitle}>Dashboard</h1>
           <p className={styles.pageSubtitle}>
-            {summary.data ? `${summary.data.count} transações registradas` : 'Carregando...'}
+            {isLoading
+              ? 'Carregando...'
+              : `${periodSummary.count} transações no período`}
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -215,13 +272,17 @@ export function Dashboard() {
         </div>
       )}
 
-      <SummaryCards summary={summary.data} isLoading={summary.status === 'loading'} />
+      {/* Cards com resumo do período selecionado — não o total global */}
+      <SummaryCards
+        summary={isLoading ? null : periodSummary}
+        isLoading={isLoading}
+      />
 
-      {/* Gráfico com period selector */}
+      {/* Gráfico com seletor de período */}
       <div className={styles.chartCard}>
         <div className={styles.chartHeader}>
-          <h2 className={styles.sectionTitle}>Histórico recente</h2>
-          <PeriodSelector value={chartPeriod} onChange={setChartPeriod} />
+          <h2 className={styles.sectionTitle}>Histórico do período</h2>
+          <PeriodSelector value={chartPeriod} onChange={handlePeriodChange} />
         </div>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
@@ -240,22 +301,22 @@ export function Dashboard() {
               <XAxis dataKey="date" tick={{ fill: '#8888AA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={(v: number) => formatCurrency(v)} tick={{ fill: '#8888AA', fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
               <Tooltip contentStyle={{ background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#EEEEFF', fontSize: 12 }} formatter={(v: number) => formatCurrency(v)} />
-              <Area type="monotone" dataKey="income" stroke="#00D9A3" strokeWidth={2} fill="url(#gradIncome)" />
-              <Area type="monotone" dataKey="expense" stroke="#FF5B7F" strokeWidth={2} fill="url(#gradExpense)" />
+              <Area type="monotone" dataKey="income"  name="Receita" stroke="#00D9A3" strokeWidth={2} fill="url(#gradIncome)" />
+              <Area type="monotone" dataKey="expense" name="Despesa" stroke="#FF5B7F" strokeWidth={2} fill="url(#gradExpense)" />
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <p className={styles.emptyChart}>Sem dados para o período selecionado.</p>
+          <p className={styles.emptyChart}>Sem transações nos últimos {PERIOD_DAYS[chartPeriod]} dias.</p>
         )}
       </div>
 
       <div className={styles.listCard}>
         <div className={styles.listHeader}>
           <h2 className={styles.sectionTitle}>Transações</h2>
-          <span className={styles.count}>{transactions.data?.length ?? 0} itens</span>
+          <span className={styles.count}>{periodFiltered.length} itens</span>
         </div>
         <TransactionList
-          transactions={transactions.data ?? []}
+          transactions={periodFiltered}
           isLoading={isLoading}
           onEdit={openEdit}
           onDelete={deleteTransaction}
