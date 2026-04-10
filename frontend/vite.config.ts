@@ -7,8 +7,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      // '@' aponta para 'src/' — como o paths do tsconfig.json
-      // Permite importar '@/components/...' em vez de '../../components/...'
+      // '@' aponta para 'src/' — permite importar '@/components/...' sem paths relativos
       '@': path.resolve(__dirname, './src'),
     },
   },
@@ -16,15 +15,12 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        // Injeta variáveis e mixins globalmente em todos os arquivos SCSS
-        // Evita ter que importar em cada arquivo de componente
-        // @import injeta no escopo global compartilhado entre todos os arquivos SCSS.
-        // @use isolaria cada módulo — mixins não enxergariam as variáveis de outro módulo.
+        // Usa a API moderna do Sass (sem deprecation warnings).
+        // additionalData injeta o arquivo _index.scss em todo módulo SCSS,
+        // que por sua vez usa @forward para expor variáveis e mixins no escopo global.
         // Analogia Angular: stylePreprocessorOptions.includePaths no angular.json
-        additionalData: `
-          @import "@/styles/variables";
-          @import "@/styles/mixins";
-        `,
+        api: 'modern-compiler',
+        additionalData: `@use "@/styles/index" as *;`,
       },
     },
   },
@@ -33,7 +29,6 @@ export default defineConfig({
     port: 5173,
     proxy: {
       // Redireciona /api/* para o backend Go em localhost:8080
-      // Análogo ao proxy reverso do Angular CLI (proxy.conf.json)
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,

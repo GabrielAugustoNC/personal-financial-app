@@ -4,6 +4,10 @@
 // Evitam duplicação de código e centralizam padrões visuais comuns.
 // ============================================================
 
+// Com a API moderna do Sass, _mixins.scss precisa declarar explicitamente
+// sua dependência de _variables.scss — o escopo não é herdado automaticamente.
+@use './variables' as *;
+
 // ---- Layout: flexbox ----
 
 // Centraliza conteúdo horizontal e verticalmente com flexbox

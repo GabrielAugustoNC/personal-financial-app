@@ -1,0 +1,11 @@
+// ============================================================
+// _index.scss — barrel de estilos globais.
+// Injetado em todos os módulos SCSS (.module.scss) via additionalData do Vite.
+// @forward reexporta os membros de cada módulo para o escopo do consumidor.
+// ============================================================
+
+// @forward expõe as variáveis e mixins de cada arquivo no namespace global (*).
+// Os módulos .module.scss que recebem este arquivo via additionalData
+// enxergam $color-*, $space-* e @mixin diretamente sem prefixo.
+@forward 'variables';
+@forward 'mixins';

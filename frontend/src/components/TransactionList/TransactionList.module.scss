@@ -31,7 +31,7 @@
 .dot {
   width         : 8px;
   height        : 8px;
-  border-radius : 9999px;
+  border-radius : $radius-full;
   flex-shrink   : 0;
   margin-top    : 2px;
   align-self    : flex-start;
@@ -155,8 +155,57 @@
   padding: $space-4 $space-5;
 }
 
-.skeletonDot    { width: 8px; height: 8px; border-radius: 9999px; }
+.skeletonDot    { width: 8px; height: 8px; border-radius: $radius-full; }
 .skeletonContent{ @include flex-col; gap: $space-2; flex: 1; }
 .skeletonTitle  { width: 40%; height: 14px; }
 .skeletonMeta   { width: 60%; height: 11px; }
 .skeletonAmount { width: 80px; height: 14px; }
+
+// ---- Edição inline de categoria ----
+
+// Pill clicável que mostra a categoria atual e abre o select ao clicar
+.categoryPill {
+  display      : inline-flex;
+  align-items  : center;
+  padding      : 2px $space-2;
+  border-radius: $radius-full;
+  background   : rgba(255,255,255,0.04);
+  border       : 1px solid $color-border;
+  color        : $color-text-secondary;
+  font-size    : 0.72rem;
+  font-weight  : 500;
+  cursor       : pointer;
+  transition   : all $transition-fast;
+  white-space  : nowrap;
+
+  &:hover {
+    background  : $color-accent-dim;
+    border-color: rgba($color-accent, 0.3);
+    color       : $color-accent-light;
+  }
+}
+
+// Select inline que substitui o pill durante edição
+.categorySelect {
+  @include input-base;
+  padding      : 1px $space-2;
+  font-size    : 0.72rem;
+  height       : 22px;
+  width        : auto;
+  min-width    : 110px;
+  max-width    : 160px;
+  appearance   : none;
+  cursor       : pointer;
+
+  option { background: $color-bg-card; color: $color-text-primary; }
+}
+
+// Botão de detalhes do cartão — destaque azul
+.cardBtn {
+  color: $color-balance !important;
+
+  &:hover {
+    background : $color-balance-bg !important;
+    color      : $color-balance !important;
+  }
+}

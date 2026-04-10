@@ -68,4 +68,7 @@ type TransactionService interface {
 
 	// GetSummary retorna o resumo financeiro agregado (totais e contagem)
 	GetSummary(ctx context.Context) (*models.TransactionSummary, error)
+
+	// UpdateCategoryByTitleSimilarity propaga a nova categoria para transações com título similar (≥50%)
+	UpdateCategoryByTitleSimilarity(ctx context.Context, referenceTitle string, newCategory string) (int64, error)
 }

@@ -11,6 +11,10 @@ import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '@/types';
 import type { Period }          from '@/types/wallet';
 import { PERIOD_DAYS }          from '@/types/wallet';
 import { useTransactions }      from '@/hooks/useTransactions';
+import { useCategories }        from '@/hooks/useCategories';
+import { categoryService }      from '@/services/categoryService';
+import { transactionService }   from '@/services/transactionService';
+import { CardDetailModal }      from '@/components/CardDetailModal/CardDetailModal';
 import { SummaryCards }         from '@/components/SummaryCard/SummaryCard';
 import { TransactionList }      from '@/components/TransactionList/TransactionList';
 import { TransactionForm }      from '@/components/TransactionForm/TransactionForm';
@@ -109,7 +113,9 @@ export function Dashboard() {
   const [filterOpen, setFilterOpen]   = useState<boolean>(false);
   const [draft, setDraft]             = useState<FilterDraft>(EMPTY_DRAFT);
   const [quickFilter, setQuickFilter] = useState<TransactionFilter>({});
-  const [chartPeriod, setChartPeriod] = useState<Period>('1m');
+  const [chartPeriod, setChartPeriod]     = useState<Period>('1m');
+  const [cardDetailTarget, setCardDetailTarget] = useState<Transaction | null>(null);
+  const { categories, expenseCategories, incomeCategories } = useCategories();
 
   const activeCount = countActiveFilters(draft);
 
@@ -145,6 +151,25 @@ export function Dashboard() {
         expense : t.type === 'expense' ? t.amount : 0,
       }));
   }, [periodFiltered]);
+
+  // Altera a categoria de uma transação e propaga para transações com título similar (≥50%).
+  // Chamado pelo CategoryCell ao confirmar a seleção inline.
+  async function handleCategoryChange(transaction: Transaction, newCategory: string): Promise<void> {
+    // 1. Atualiza a transação específica via PUT
+    await transactionService.update(transaction.id, { category: newCategory });
+    // 2. Propaga para transações com título similar no backend
+    await categoryService.bulkUpdate({
+      reference_title : transaction.title,
+      new_category    : newCategory,
+    });
+    // 3. Recarrega a lista para refletir todas as alterações
+    await refetch();
+  }
+
+  // Abre o modal de detalhes do cartão para a transação selecionada.
+  function handleOpenCardDetails(transaction: Transaction): void {
+    setCardDetailTarget(transaction);
+  }
 
   // Ao mudar o período, mantém o filtro de tipo/categoria já aplicado.
   // Os cards e o gráfico atualizam automaticamente via useMemo.
@@ -192,6 +217,9 @@ export function Dashboard() {
 
   // Carregando se o estado de transações ainda não resolveu
   const isLoading = transactions.status === 'loading' || transactions.status === 'idle';
+
+  // Lista unificada de categorias para o select inline da lista de transações
+  const allCategoryNames = categories.map(c => c.name);
 
   return (
     <div className={styles.dashboard}>
@@ -318,8 +346,11 @@ export function Dashboard() {
         <TransactionList
           transactions={periodFiltered}
           isLoading={isLoading}
+          categories={allCategoryNames}
           onEdit={openEdit}
           onDelete={deleteTransaction}
+          onCategoryChange={handleCategoryChange}
+          onOpenCardDetails={handleOpenCardDetails}
         />
       </div>
 
@@ -329,6 +360,14 @@ export function Dashboard() {
           onClose={closeModal}
           onRefetch={refetch}
           editData={editTarget}
+        />
+      )}
+
+      {/* Modal de detalhes do cartão de crédito */}
+      {cardDetailTarget && (
+        <CardDetailModal
+          transaction={cardDetailTarget}
+          onClose={() => setCardDetailTarget(null)}
         />
       )}
     </div>

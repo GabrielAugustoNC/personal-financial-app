@@ -3,6 +3,12 @@
 // Importado apenas uma vez em main.tsx
 // ============================================================
 
+// Importação explícita necessária pois global.scss não é um CSS Module.
+// O additionalData do Vite injeta @use antes de modules (.module.scss),
+// mas global.scss precisa declarar suas dependências diretamente.
+@use './variables' as *;
+@use './mixins' as *;
+
 // Reset moderno
 *,
 *::before,

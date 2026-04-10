@@ -7,6 +7,7 @@ package services
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/user/financas-api/interfaces"
@@ -214,4 +215,104 @@ func (s *TransactionService) BulkImport(ctx context.Context, items []models.Impo
 // Analogia .NET: _repository.GetFinancialSummaryAsync()
 func (s *TransactionService) GetSummary(ctx context.Context) (*models.TransactionSummary, error) {
 	return s.repository.GetSummary(ctx)
+}
+
+// UpdateCategoryByTitleSimilarity atualiza a categoria de todas as transações
+// cujo título tenha pelo menos 50% de similaridade com o título fornecido.
+// Usado quando o usuário altera a categoria de uma transação na lista —
+// o sistema propaga automaticamente para transações com nomes parecidos.
+//
+// O algoritmo usa similaridade de Jaro-Winkler simplificada:
+// compara o número de caracteres comuns / comprimento médio dos títulos.
+// Analogia .NET: método de serviço com LINQ + Levenshtein customizado
+func (s *TransactionService) UpdateCategoryByTitleSimilarity(
+	ctx context.Context,
+	referenceTitle string,
+	newCategory string,
+) (int64, error) {
+	// Busca todas as transações para calcular similaridade no serviço.
+	// Para bases grandes isso seria feito com index de texto no MongoDB,
+	// mas para uso pessoal é suficiente e evita dependência de índice especial.
+	all, err := s.repository.FindAll(ctx, bson.M{})
+	if err != nil {
+		return 0, err
+	}
+
+	const minSimilarity = 0.50
+	var updated int64
+
+	for _, t := range all {
+		if titleSimilarity(referenceTitle, t.Title) >= minSimilarity {
+			objectID := t.ID
+			_, err := s.repository.Update(ctx, objectID, bson.M{"category": newCategory})
+			if err == nil {
+				updated++
+			}
+		}
+	}
+
+	return updated, nil
+}
+
+// titleSimilarity calcula a similaridade entre dois títulos usando
+// o coeficiente de Sørensen–Dice sobre bigramas (pares de caracteres).
+// Retorna valor entre 0.0 (totalmente diferente) e 1.0 (idênticos).
+// É mais robusto que distância de Levenshtein simples para títulos em português.
+func titleSimilarity(a, b string) float64 {
+	a = normalizeTitle(a)
+	b = normalizeTitle(b)
+
+	if a == b {
+		return 1.0
+	}
+	if len(a) < 2 || len(b) < 2 {
+		return 0.0
+	}
+
+	bigramsA := bigrams(a)
+	bigramsB := bigrams(b)
+
+	// Conta interseção dos bigramas
+	intersection := 0
+	usedB := make([]bool, len(bigramsB))
+	for _, bg := range bigramsA {
+		for j, bgB := range bigramsB {
+			if !usedB[j] && bg == bgB {
+				intersection++
+				usedB[j] = true
+				break
+			}
+		}
+	}
+
+	return float64(2*intersection) / float64(len(bigramsA)+len(bigramsB))
+}
+
+// bigrams extrai todos os pares de caracteres adjacentes de uma string.
+// Exemplo: "salário" → ["sa", "al", "lá", "ár", "ri", "io"]
+func bigrams(s string) []string {
+	runes := []rune(s)
+	result := make([]string, 0, len(runes)-1)
+	for i := 0; i < len(runes)-1; i++ {
+		result = append(result, string(runes[i:i+2]))
+	}
+	return result
+}
+
+// normalizeTitle converte para minúsculas e remove espaços extras.
+func normalizeTitle(s string) string {
+	result := make([]rune, 0, len(s))
+	prevSpace := false
+	for _, r := range []rune(strings.ToLower(strings.TrimSpace(s))) {
+		if r == ' ' {
+			if !prevSpace {
+				result = append(result, r)
+			}
+			prevSpace = true
+		} else {
+			result = append(result, r)
+			prevSpace = false
+		}
+	}
+	return string(result)
 }

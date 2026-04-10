@@ -7,7 +7,7 @@ import type {
   ImportTransactionItem,
   BulkImportResponse,
 } from '@/types';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
 import { transactionService } from '@/services/transactionService';
 import { formatDateInput, formatCurrency } from '@/utils/format';
 import styles from './TransactionForm.module.scss';
@@ -118,7 +118,8 @@ export function TransactionForm({ onSubmit, onClose, onRefetch, editData }: Tran
       .finally(() => setLoadingSug(false));
   }, [tab, suggestions.length]);
 
-  const categories = form.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const { incomeCategories, expenseCategories } = useCategories();
+  const categories = form.type === 'income' ? incomeCategories : expenseCategories;
 
   // ---- Handlers: formulário manual ----
 

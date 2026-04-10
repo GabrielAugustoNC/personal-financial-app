@@ -1,0 +1,259 @@
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  @include flex-center;
+  padding: $space-4;
+}
+
+.modal {
+  width: 100%; max-width: 600px;
+  max-height: 90vh;
+  background: $color-bg-modal;
+  border: 1px solid $color-border-medium;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-modal;
+  @include flex-col;
+  overflow: hidden;
+}
+
+.header {
+  @include flex-between;
+  padding: $space-5 $space-6;
+  border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1rem; font-weight: 600;
+  color: $color-text-primary;
+}
+
+.subtitle {
+  font-size: 0.78rem; color: $color-text-muted;
+  margin-top: 2px; font-family: $font-mono;
+}
+
+.closeBtn {
+  @include flex-center;
+  width: 32px; height: 32px;
+  border-radius: $radius-md;
+  color: $color-text-muted;
+  transition: all $transition-fast;
+  &:hover { background: rgba(255,255,255,0.06); color: $color-text-secondary; }
+}
+
+// ---- Progress bar ----
+.progressBar {
+  padding: $space-4 $space-6;
+  border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
+}
+
+.progressLabels {
+  @include flex-between;
+  font-size: 0.78rem;
+  color: $color-text-secondary;
+  margin-bottom: $space-2;
+}
+
+.overLimit { color: $color-expense !important; }
+
+.progressTrack {
+  height: 6px; border-radius: $radius-full;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%; border-radius: $radius-full;
+  background: $color-income;
+  transition: width 0.3s ease;
+
+  &.progressOver { background: $color-expense; }
+}
+
+// ---- Mode selector ----
+.modeRow {
+  @include flex-between;
+  padding: $space-4 $space-6;
+  border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
+  gap: $space-3;
+}
+
+.modeTabs {
+  display: flex; gap: $space-1;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid $color-border-medium;
+  border-radius: $radius-md; padding: 3px;
+}
+
+.modeTab {
+  padding: $space-1 $space-3;
+  border-radius: $radius-sm;
+  font-size: 0.78rem; font-weight: 600;
+  color: $color-text-muted;
+  transition: all $transition-fast;
+  &:hover { color: $color-text-secondary; }
+  &.modeActive {
+    background: $color-accent-dim;
+    color: $color-accent-light;
+    border: 1px solid rgba($color-accent, 0.25);
+  }
+}
+
+.uploadBtn {
+  @include btn-base;
+  font-size: 0.78rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid $color-border-medium;
+  color: $color-text-secondary;
+  &:hover { background: rgba(255,255,255,0.07); }
+}
+
+// ---- Format hint ----
+.formatHint {
+  margin: 0 $space-6;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid $color-border;
+  border-radius: $radius-md; overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hintLabel {
+  font-size: 0.68rem; font-weight: 600;
+  color: $color-text-muted;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  padding: $space-2 $space-3;
+  border-bottom: 1px solid $color-border;
+}
+
+.hintCode {
+  font-family: $font-mono; font-size: 0.72rem;
+  color: $color-text-secondary;
+  padding: $space-3; line-height: 1.6; white-space: pre;
+}
+
+// ---- Item list ----
+.itemList {
+  @include flex-col;
+  gap: $space-2;
+  padding: $space-4 $space-6;
+  overflow-y: auto;
+  flex: 1;
+  max-height: 280px;
+  @include scrollbar;
+}
+
+.itemRow {
+  display: grid;
+  grid-template-columns: 1fr 130px 140px 28px;
+  gap: $space-2;
+  align-items: center;
+}
+
+.itemInput {
+  @include input-base;
+  padding: $space-2 $space-3;
+  font-size: 0.82rem;
+}
+
+.itemAmount {
+  display: flex; align-items: center; gap: $space-1;
+}
+
+.amountPrefix {
+  font-size: 0.72rem; color: $color-text-muted; flex-shrink: 0;
+}
+
+.amountInput { width: 100%; }
+
+.itemSelect {
+  @include input-base;
+  padding: $space-2 $space-3;
+  font-size: 0.8rem;
+  appearance: none; cursor: pointer;
+  option { background: $color-bg-card; color: $color-text-primary; }
+}
+
+.removeBtn {
+  @include flex-center;
+  width: 28px; height: 28px;
+  border-radius: $radius-sm;
+  color: $color-text-muted;
+  transition: all $transition-fast;
+  &:hover { background: $color-expense-bg; color: $color-expense; }
+}
+
+.addItemBtn {
+  @include btn-base;
+  @include flex-center;
+  margin: 0 $space-6 $space-3;
+  width: calc(100% - 48px);
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed $color-border-medium;
+  color: $color-text-muted;
+  font-size: 0.82rem;
+  justify-content: center;
+  &:hover { border-color: $color-border-strong; color: $color-text-secondary; }
+}
+
+.emptyHint {
+  font-size: 0.8rem; color: $color-text-muted;
+  text-align: center; padding: $space-8;
+}
+
+.loadingItems { @include flex-col; gap: $space-2; padding: $space-4 $space-6; }
+.itemSkeleton { height: 40px; border-radius: $radius-md; }
+
+.errorMsg {
+  @include flex-center;
+  gap: $space-2;
+  margin: 0 $space-6;
+  font-size: 0.78rem; color: $color-expense;
+  background: $color-expense-bg;
+  border: 1px solid $color-expense-border;
+  border-radius: $radius-md;
+  padding: $space-2 $space-4;
+  justify-content: flex-start;
+  flex-shrink: 0;
+}
+
+.footer {
+  @include flex-between;
+  padding: $space-4 $space-6;
+  border-top: 1px solid $color-border;
+  gap: $space-3;
+  flex-shrink: 0;
+}
+
+.cancelBtn {
+  @include btn-base;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid $color-border-medium;
+  color: $color-text-secondary;
+  &:hover { background: rgba(255,255,255,0.07); }
+}
+
+.saveBtn {
+  @include btn-base;
+  background: $color-accent; color: #fff; flex: 1; justify-content: center;
+  &:hover:not(:disabled) { filter: brightness(1.1); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+// ---- Success state ----
+.successState {
+  @include flex-col; @include flex-center;
+  gap: $space-3; padding: $space-12; text-align: center; flex: 1;
+}
+.successIcon  { color: $color-income; }
+.successTitle { font-size: 1rem; font-weight: 600; color: $color-text-primary; }
+.successSub   { font-size: 0.82rem; color: $color-text-secondary; }
+.doneBtn {
+  @include btn-base;
+  background: $color-accent; color: #fff; margin-top: $space-2;
+  &:hover { filter: brightness(1.1); }
+}

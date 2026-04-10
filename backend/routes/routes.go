@@ -5,6 +5,8 @@
 package routes
 
 import (
+	"context"
+
 	"github.com/user/financas-api/handlers"
 	"github.com/user/financas-api/repositories"
 	"github.com/user/financas-api/services"
@@ -49,6 +51,19 @@ func Setup(router *gin.Engine, db *mongo.Database) {
 	walletService := services.NewWalletService(walletRepo)
 	walletHandler := handlers.NewWalletHandler(walletService)
 
+	// Dependências de categorias
+	categoryRepo    := repositories.NewMongoCategoryRepository(db)
+	categoryService := services.NewCategoryService(categoryRepo)
+	categoryHandler := handlers.NewCategoryHandler(categoryService, transactionService)
+
+	// Popula categorias padrão se a collection estiver vazia
+	_ = categoryService.EnsureDefaults(context.Background())
+
+	// Dependências de detalhes de cartão
+	cardDetailRepo    := repositories.NewMongoCardDetailRepository(db)
+	cardDetailService := services.NewCardDetailService(cardDetailRepo)
+	cardDetailHandler := handlers.NewCardDetailHandler(cardDetailService, transactionService)
+
 	// ---- Definição das rotas agrupadas por recurso ----
 	// Prefixo /api em todas as rotas para versionamento e clareza.
 	// Analogia .NET: [Route("api/[controller]")] nos controllers
@@ -78,5 +93,18 @@ func Setup(router *gin.Engine, db *mongo.Database) {
 			w.GET("", walletHandler.Get)
 			w.PUT("", walletHandler.Update)
 		}
+
+		// Categorias — listagem, criação, remoção e propagação em massa
+		cat := api.Group("/categories")
+		{
+			cat.GET("",             categoryHandler.GetAll)
+			cat.POST("",            categoryHandler.Create)
+			cat.DELETE("/:id",      categoryHandler.Delete)
+			cat.POST("/bulk-update", categoryHandler.UpdateCategoryBulk)
+		}
+
+		// Detalhes de cartão — vinculados a uma transação específica
+		tx.GET("/:id/card-details",  cardDetailHandler.GetByTransaction)
+		tx.POST("/:id/card-details", cardDetailHandler.Import)
 	}
 }

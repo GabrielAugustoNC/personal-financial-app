@@ -8,6 +8,7 @@ import type {
 } from '@/types/analytics';
 import { formatCurrency } from '@/utils/format';
 import styles from './AnalyticsDashboard.module.scss';
+import { CategoryOverview } from './CategoryOverview';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PERIOD_OPTIONS } from '@/types/wallet';
 import {
@@ -353,6 +354,15 @@ export function AnalyticsDashboard() {
           ) : (
             <p className={styles.emptyMsg}>Sem despesas neste mês.</p>
           )}
+        </div>
+
+        {/* Visão geral de gastos por categoria — barras horizontais com valores */}
+        <div className={`${styles.card} ${styles.spanFull}`}>
+          <span className={styles.sectionLabel}>Gastos por categoria — visão geral</span>
+          <CategoryOverview
+            breakdown={data.category_breakdown}
+            isLoading={false}
+          />
         </div>
 
         {/* Linha — saldo mensal */}

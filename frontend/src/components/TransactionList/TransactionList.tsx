@@ -1,28 +1,24 @@
 // ============================================================
-// TransactionList — lista de transações com skeleton, estado vazio e ações.
-// Cada linha exibe título, categoria, data, valor formatado e botões de editar/excluir.
-// Os botões de ação ficam ocultos e aparecem apenas no hover da linha.
+// TransactionList — lista de transações com edição inline de categoria
+// e botão de detalhamento para faturas de Cartão de Crédito.
 // ============================================================
 
+import { useState } from 'react';
 import type { Transaction } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
 import styles from './TransactionList.module.scss';
-import { Trash2, Pencil } from 'lucide-react';
+import { Trash2, Pencil, CreditCard } from 'lucide-react';
 
-// Props da lista de transações:
-// - transactions: array de transações a exibir
-// - isLoading: ativa o skeleton durante carregamento
-// - onEdit: callback chamado ao clicar em editar (abre modal com dados pré-preenchidos)
-// - onDelete: callback chamado ao clicar em excluir (remove via API e recarrega)
 interface TransactionListProps {
-  transactions : Transaction[];
-  isLoading    : boolean;
-  onEdit       : (transaction: Transaction) => void;
-  onDelete     : (id: string) => void;
+  transactions      : Transaction[];
+  isLoading         : boolean;
+  categories        : string[];
+  onEdit            : (transaction: Transaction) => void;
+  onDelete          : (id: string) => void;
+  onCategoryChange  : (transaction: Transaction, newCategory: string) => Promise<void>;
+  onOpenCardDetails : (transaction: Transaction) => void;
 }
 
-// SkeletonRow exibe uma linha placeholder animada durante o carregamento.
-// Mantém a proporção da linha real para evitar layout shift.
 function SkeletonRow() {
   return (
     <div className={styles.skeletonRow}>
@@ -36,12 +32,72 @@ function SkeletonRow() {
   );
 }
 
-// TransactionList renderiza o estado correto para cada situação:
-// 1. Carregando → 5 linhas skeleton
-// 2. Lista vazia → mensagem orientativa
-// 3. Com dados → linhas interativas com ações de editar e excluir
-export function TransactionList({ transactions, isLoading, onEdit, onDelete }: TransactionListProps) {
-  // Estado de carregamento: exibe 5 skeletons
+// CategoryCell — célula de categoria com edição inline ao clicar.
+// Enter confirma, Escape cancela, blur confirma (UX fluído).
+function CategoryCell({
+  transaction,
+  categories,
+  onCategoryChange,
+}: {
+  transaction     : Transaction;
+  categories      : string[];
+  onCategoryChange: (t: Transaction, cat: string) => Promise<void>;
+}) {
+  const [editing, setEditing]   = useState(false);
+  const [selected, setSelected] = useState(transaction.category);
+  const [saving, setSaving]     = useState(false);
+
+  async function confirm(value: string): Promise<void> {
+    if (value === transaction.category) { setEditing(false); return; }
+    setSaving(true);
+    try {
+      await onCategoryChange(transaction, value);
+      setSelected(value);
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <select
+        className={styles.categorySelect}
+        value={selected}
+        autoFocus
+        disabled={saving}
+        onChange={e => setSelected(e.target.value)}
+        onBlur={e => confirm(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter')  confirm(selected);
+          if (e.key === 'Escape') setEditing(false);
+        }}
+      >
+        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
+    );
+  }
+
+  return (
+    <button
+      className={styles.categoryPill}
+      onClick={() => setEditing(true)}
+      title="Clique para alterar a categoria"
+    >
+      {saving ? '...' : selected}
+    </button>
+  );
+}
+
+export function TransactionList({
+  transactions,
+  isLoading,
+  categories,
+  onEdit,
+  onDelete,
+  onCategoryChange,
+  onOpenCardDetails,
+}: TransactionListProps) {
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -50,36 +106,35 @@ export function TransactionList({ transactions, isLoading, onEdit, onDelete }: T
     );
   }
 
-  // Estado vazio: orienta o usuário a criar a primeira transação
   if (transactions.length === 0) {
     return (
       <div className={styles.empty}>
         <span className={styles.emptyIcon}>📭</span>
         <p className={styles.emptyTitle}>Nenhuma transação encontrada</p>
-        <p className={styles.emptySubtitle}>Adicione sua primeira transação clicando em "Nova Transação"</p>
+        <p className={styles.emptySubtitle}>
+          Adicione sua primeira transação clicando em "Nova Transação"
+        </p>
       </div>
     );
   }
 
-  // Estado com dados: lista com scroll limitado e ações por linha
   return (
     <div className={`${styles.container} scrollable`}>
-      {transactions.map((transaction) => (
-        <div
-          key={transaction.id}
-          className={`${styles.row} ${styles[transaction.type]} fade-in`}
-        >
-          {/* Indicador colorido: verde para receita, vermelho para despesa */}
+      {transactions.map(transaction => (
+        <div key={transaction.id} className={`${styles.row} ${styles[transaction.type]} fade-in`}>
           <div className={styles.dot} />
 
-          {/* Informações principais da transação */}
           <div className={styles.info}>
             <span className={styles.title}>{transaction.title}</span>
             <div className={styles.meta}>
-              <span className={styles.category}>{transaction.category}</span>
+              {/* Categoria editável inline ao clicar */}
+              <CategoryCell
+                transaction={transaction}
+                categories={categories}
+                onCategoryChange={onCategoryChange}
+              />
               <span className={styles.sep}>·</span>
               <span className={styles.date}>{formatDate(transaction.date)}</span>
-              {/* Descrição opcional — exibida apenas quando preenchida */}
               {transaction.description && (
                 <>
                   <span className={styles.sep}>·</span>
@@ -89,20 +144,24 @@ export function TransactionList({ transactions, isLoading, onEdit, onDelete }: T
             </div>
           </div>
 
-          {/* Valor e botões de ação — ações visíveis apenas no hover */}
           <div className={styles.right}>
             <span className={`${styles.amount} mono`}>
-              {/* Prefixo − para despesas e + para receitas */}
               {transaction.type === 'expense' ? '−' : '+'}
               {formatCurrency(transaction.amount)}
             </span>
 
             <div className={styles.actions}>
-              <button
-                className={styles.actionBtn}
-                onClick={() => onEdit(transaction)}
-                title="Editar"
-              >
+              {/* Botão exclusivo para faturas de Cartão de Crédito */}
+              {transaction.category === 'Cartão de Crédito' && (
+                <button
+                  className={`${styles.actionBtn} ${styles.cardBtn}`}
+                  onClick={() => onOpenCardDetails(transaction)}
+                  title="Detalhar fatura"
+                >
+                  <CreditCard size={14} />
+                </button>
+              )}
+              <button className={styles.actionBtn} onClick={() => onEdit(transaction)} title="Editar">
                 <Pencil size={14} />
               </button>
               <button
