@@ -18,6 +18,17 @@ const apiClient = axios.create({
   },
 });
 
+// Interceptor de requisição — injeta o token JWT no header Authorization.
+// Lê o token do localStorage a cada requisição para refletir mudanças de sessão.
+// Analogia Angular: HttpInterceptor adicionando headers de autenticação.
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('financas_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Interceptor de resposta — normaliza os erros da API para um formato consistente.
 // Em caso de erro, extrai a mensagem do campo error do envelope ApiResponse,
 // ou usa a mensagem nativa do Axios como fallback.

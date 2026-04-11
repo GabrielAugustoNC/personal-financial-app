@@ -8,7 +8,9 @@ import type {
 } from '@/types/analytics';
 import { formatCurrency } from '@/utils/format';
 import styles from './AnalyticsDashboard.module.scss';
-import { CategoryOverview } from './CategoryOverview';
+import { CategoryOverview }  from './CategoryOverview';
+import { GoalProgressPanel } from './GoalProgress';
+import { GoalManager }     from '@/components/Goals/GoalManager';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PERIOD_OPTIONS } from '@/types/wallet';
 import {
@@ -365,6 +367,15 @@ export function AnalyticsDashboard() {
           />
         </div>
 
+        {/* Metas financeiras — progresso mensal por categoria */}
+        <div className={`${styles.card} ${styles.spanFull}`}>
+          <div className={styles.sectionHeaderRow}>
+            <span className={styles.sectionLabel}>Metas do mês</span>
+            <span className={styles.sectionHint}>Clique no limite para editar</span>
+          </div>
+          <GoalManager />
+        </div>
+
         {/* Linha — saldo mensal */}
         <div className={`${styles.card} ${styles.span2}`}>
           <span className={styles.sectionLabel}>Saldo mês a mês</span>
@@ -412,6 +423,12 @@ export function AnalyticsDashboard() {
               />
             </RadialBarChart>
           </ResponsiveContainer>
+        </div>
+
+        {/* Metas financeiras — barras de progresso com alerta de limite */}
+        <div className={`${styles.card} ${styles.spanFull}`}>
+          <span className={styles.sectionLabel}>Metas mensais por categoria</span>
+          <GoalProgressPanel />
         </div>
 
         {/* Pontos de atenção */}

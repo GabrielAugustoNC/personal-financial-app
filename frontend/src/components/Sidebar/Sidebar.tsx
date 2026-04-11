@@ -8,7 +8,7 @@
 import type { AppView } from '@/components/Sidebar/Sidebar';
 import { WalletWidget } from '@/components/WalletWidget/WalletWidget';
 import styles from './Sidebar.module.scss';
-import { LayoutDashboard, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, BarChart2, LogOut } from 'lucide-react';
 
 // AppView define as telas disponíveis na aplicação.
 // Exportado daqui pois é o ponto central de navegação.
@@ -33,12 +33,14 @@ const NAV_ITEMS: NavItem[] = [
 interface SidebarProps {
   activeView   : AppView;
   onViewChange : (view: AppView) => void;
+  userName     : string;   // nome do usuário autenticado
+  onLogout     : () => void;
 }
 
 // Sidebar é um componente controlado — não mantém estado de navegação interno.
 // O App.tsx controla qual tela está ativa e passa via props.
 // Analogia Angular: componente de navegação com [routerLink] e [routerLinkActive]
-export function Sidebar({ activeView, onViewChange }: SidebarProps) {
+export function Sidebar({ activeView, onViewChange, userName, onLogout }: SidebarProps) {
   return (
     <aside className={styles.sidebar}>
       {/* Logo da aplicação */}
@@ -67,9 +69,15 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
         <WalletWidget />
       </div>
 
-      {/* Versão da aplicação exibida no rodapé */}
+      {/* Rodapé: nome do usuário + botão de logout */}
       <div className={styles.footer}>
-        <span className={styles.version}>v1.0.0</span>
+        <div className={styles.userInfo}>
+          <span className={styles.userName}>{userName}</span>
+          <span className={styles.version}>v1.0.0</span>
+        </div>
+        <button className={styles.logoutBtn} onClick={onLogout} title="Sair">
+          <LogOut size={14} />
+        </button>
       </div>
     </aside>
   );

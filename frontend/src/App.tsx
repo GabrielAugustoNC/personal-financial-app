@@ -1,37 +1,60 @@
 // ============================================================
 // App — componente raiz da aplicação.
-// Gerencia o estado de navegação entre as duas telas disponíveis:
-// Dashboard (padrão) e Analytics.
-// Renderiza a Sidebar permanente e a tela ativa no conteúdo principal.
-// Analogia Angular: AppComponent com RouterOutlet e navegação via serviço
+// Envolve tudo com AuthProvider e exibe o LoginPage quando não autenticado.
+// Quando autenticado, exibe a layout com Sidebar e as telas principais.
 // ============================================================
 
 import { useState }  from 'react';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import type { AppView } from '@/components/Sidebar/Sidebar';
-import { Sidebar }          from '@/components/Sidebar/Sidebar';
-import { Dashboard }        from '@/components/Dashboard/Dashboard';
+import { Sidebar }           from '@/components/Sidebar/Sidebar';
+import { Dashboard }         from '@/components/Dashboard/Dashboard';
 import { AnalyticsDashboard } from '@/components/Analytics/AnalyticsDashboard';
+import { LoginPage }         from '@/pages/LoginPage';
 import styles from './App.module.scss';
 
-// App é o componente de nível mais alto (root component).
-// Mantém apenas o estado de navegação — toda lógica de negócio vive nos hooks.
-export default function App() {
-  // activeView controla qual tela está sendo exibida no conteúdo principal
+// AppContent é o conteúdo real — separado do App para poder usar o hook useAuth
+// (que requer estar dentro do AuthProvider).
+function AppContent() {
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [activeView, setActiveView] = useState<AppView>('dashboard');
 
+  // Exibe um loading mínimo enquanto restaura a sessão do localStorage
+  if (isLoading) {
+    return (
+      <div className={styles.loadingScreen}>
+        <span className={styles.loadingIcon}>₿</span>
+      </div>
+    );
+  }
+
+  // Usuário não autenticado → exibe tela de login/registro
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  // Usuário autenticado → exibe a aplicação completa
   return (
     <div className={styles.layout}>
-      {/* Sidebar permanente — visível em todas as telas */}
       <Sidebar
         activeView={activeView}
         onViewChange={setActiveView}
+        userName={user?.name ?? ''}
+        onLogout={logout}
       />
-
-      {/* Conteúdo principal — renderiza condicionalmente a tela ativa */}
       <main className={styles.main}>
         {activeView === 'dashboard' && <Dashboard />}
         {activeView === 'analytics' && <AnalyticsDashboard />}
       </main>
     </div>
+  );
+}
+
+// App envolve tudo com AuthProvider — disponibiliza o contexto de auth
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

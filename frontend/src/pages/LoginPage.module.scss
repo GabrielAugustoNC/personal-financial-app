@@ -1,0 +1,156 @@
+.page {
+  @include flex-center;
+  min-height : 100vh;
+  background : $color-bg-deep;
+  padding    : $space-4;
+
+  // Padrão de grade sutil no fundo
+  background-image: radial-gradient(
+    circle at 50% 0%,
+    rgba(124, 106, 247, 0.08) 0%,
+    transparent 60%
+  );
+}
+
+.card {
+  width         : 100%;
+  max-width     : 400px;
+  background    : $color-bg-card;
+  border        : 1px solid $color-border-medium;
+  border-radius : $radius-xl;
+  padding       : $space-8 $space-8;
+  box-shadow    : $shadow-modal;
+}
+
+// ---- Logo ----
+.logo {
+  @include flex-center;
+  gap           : $space-3;
+  margin-bottom : $space-6;
+  justify-content: flex-start;
+}
+
+.logoIcon {
+  @include flex-center;
+  width         : 40px;
+  height        : 40px;
+  background    : $color-accent-dim;
+  border        : 1px solid rgba($color-accent, 0.3);
+  border-radius : $radius-md;
+  font-size     : 1.1rem;
+  color         : $color-accent-light;
+}
+
+.logoText {
+  font-size     : 1.2rem;
+  font-weight   : 600;
+  color         : $color-text-primary;
+  letter-spacing: -0.01em;
+}
+
+// ---- Tabs ----
+.tabs {
+  display               : grid;
+  grid-template-columns : 1fr 1fr;
+  gap                   : $space-1;
+  background            : rgba(255,255,255,0.04);
+  border                : 1px solid $color-border-medium;
+  border-radius         : $radius-md;
+  padding               : 3px;
+  margin-bottom         : $space-5;
+}
+
+.tab {
+  @include flex-center;
+  gap          : $space-2;
+  padding      : $space-2 $space-3;
+  border-radius: $radius-sm;
+  font-size    : 0.85rem;
+  font-weight  : 500;
+  color        : $color-text-muted;
+  transition   : all $transition-fast;
+
+  &:hover { color: $color-text-secondary; }
+
+  &.tabActive {
+    background : $color-accent-dim;
+    color      : $color-accent-light;
+    border     : 1px solid rgba($color-accent, 0.25);
+  }
+}
+
+.subtitle {
+  font-size    : 0.82rem;
+  color        : $color-text-muted;
+  margin-bottom: $space-6;
+  line-height  : 1.5;
+}
+
+// ---- Formulário ----
+.form {
+  @include flex-col;
+  gap: $space-4;
+}
+
+.field {
+  @include flex-col;
+  gap: $space-2;
+}
+
+.label {
+  font-size     : 0.75rem;
+  font-weight   : 600;
+  color         : $color-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input { @include input-base; }
+
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordInput {
+  @include input-base;
+  padding-right: 42px;
+}
+
+.eyeBtn {
+  position   : absolute;
+  right      : $space-3;
+  top        : 50%;
+  transform  : translateY(-50%);
+  color      : $color-text-muted;
+  transition : color $transition-fast;
+  @include flex-center;
+
+  &:hover { color: $color-text-secondary; }
+}
+
+.errorMsg {
+  font-size    : 0.8rem;
+  color        : $color-expense;
+  background   : $color-expense-bg;
+  border       : 1px solid $color-expense-border;
+  border-radius: $radius-md;
+  padding      : $space-3 $space-4;
+}
+
+.submitBtn {
+  @include btn-base;
+  justify-content: center;
+  width      : 100%;
+  background : $color-accent;
+  color      : #fff;
+  font-size  : 0.9rem;
+  padding    : $space-3;
+  margin-top : $space-2;
+
+  &:hover:not(:disabled) {
+    filter    : brightness(1.1);
+    box-shadow: $shadow-accent;
+  }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}

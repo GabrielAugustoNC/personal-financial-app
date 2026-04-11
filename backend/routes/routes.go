@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/user/financas-api/handlers"
+	"github.com/user/financas-api/middleware"
 	"github.com/user/financas-api/repositories"
 	"github.com/user/financas-api/services"
 
@@ -30,6 +31,11 @@ func Setup(router *gin.Engine, db *mongo.Database) {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 	}))
+
+	// ---- Auth — wiring independente (rotas públicas) ----
+	userRepo    := repositories.NewMongoUserRepository(db)
+	authService := services.NewAuthService(userRepo)
+	authHandler := handlers.NewAuthHandler(authService)
 
 	// ---- Composition Root — Construção do grafo de dependências ----
 	// A ordem de construção é sempre: Repository → Service → Handler
@@ -64,10 +70,34 @@ func Setup(router *gin.Engine, db *mongo.Database) {
 	cardDetailService := services.NewCardDetailService(cardDetailRepo)
 	cardDetailHandler := handlers.NewCardDetailHandler(cardDetailService, transactionService)
 
+	// Dependências de metas financeiras
+	goalRepo    := repositories.NewMongoGoalRepository(db)
+	goalService := services.NewGoalService(goalRepo)
+	goalHandler := handlers.NewGoalHandler(goalService)
+
+	// Dependências de metas financeiras
+	// GoalService depende de transactionRepo para calcular gastos reais do mês
+	goalRepo    := repositories.NewMongoGoalRepository(db)
+	goalService := services.NewGoalService(goalRepo, transactionRepo)
+	goalHandler := handlers.NewGoalHandler(goalService)
+
+	// Dependências de metas financeiras
+	// GoalService precisa de transactionRepo para calcular gastos do mês atual
+	goalRepo    := repositories.NewMongoGoalRepository(db)
+	goalService := services.NewGoalService(goalRepo, transactionRepo)
+	goalHandler := handlers.NewGoalHandler(goalService)
+
 	// ---- Definição das rotas agrupadas por recurso ----
-	// Prefixo /api em todas as rotas para versionamento e clareza.
-	// Analogia .NET: [Route("api/[controller]")] nos controllers
+	// Rotas públicas de auth — não passam pelo middleware JWT
+	authGroup := router.Group("/api/auth")
+	{
+		authGroup.POST("/register", authHandler.Register)
+		authGroup.POST("/login",    authHandler.Login)
+	}
+
+	// Rotas protegidas — todas passam pelo middleware JWT
 	api := router.Group("/api")
+	api.Use(middleware.Auth(authService))
 	{
 		// Rotas de transações — CRUD completo + importação em massa
 		tx := api.Group("/transactions")
@@ -94,6 +124,9 @@ func Setup(router *gin.Engine, db *mongo.Database) {
 			w.PUT("", walletHandler.Update)
 		}
 
+		// Rota protegida de auth — valida token e retorna dados do usuário
+		api.GET("/auth/me", authHandler.Me)
+
 		// Categorias — listagem, criação, remoção e propagação em massa
 		cat := api.Group("/categories")
 		{
@@ -106,5 +139,31 @@ func Setup(router *gin.Engine, db *mongo.Database) {
 		// Detalhes de cartão — vinculados a uma transação específica
 		tx.GET("/:id/card-details",  cardDetailHandler.GetByTransaction)
 		tx.POST("/:id/card-details", cardDetailHandler.Import)
+
+		// Metas financeiras por categoria
+		goals := api.Group("/goals")
+		{
+			goals.GET("",      goalHandler.GetAll)
+			goals.POST("",     goalHandler.Upsert)
+			goals.DELETE("/:id", goalHandler.Delete)
+		}
+
+		// Metas financeiras por categoria
+		goals := api.Group("/goals")
+		{
+			goals.GET("",                goalHandler.GetAll)
+			goals.GET("/progress",       goalHandler.GetProgress)
+			goals.POST("",               goalHandler.Upsert)
+			goals.DELETE("/:category",   goalHandler.Delete)
+		}
+
+		// Metas financeiras — CRUD com progresso calculado em tempo real
+		goals := api.Group("/goals")
+		{
+			goals.GET("",      goalHandler.GetAll)
+			goals.POST("",     goalHandler.Create)
+			goals.PUT("/:id",  goalHandler.Update)
+			goals.DELETE("/:id", goalHandler.Delete)
+		}
 	}
 }
