@@ -1,85 +1,143 @@
 // ============================================================
-// Design Tokens — variáveis globais do sistema de design.
-// Centraliza todas as definições de cor, tipografia, espaçamento e layout.
-// Injetado automaticamente em todos os arquivos SCSS via vite.config.ts.
-// Analogia Angular: arquivo de tokens de tema como variables.scss no projeto
+// Design Tokens — CSS custom properties com suporte a Dark/Light mode.
+// O tema é controlado pelo atributo data-theme="dark"|"light" no <html>.
+// Persistido no localStorage via useTheme hook.
 // ============================================================
 
-// ---- Tipografia ----
-$font-primary : 'Plus Jakarta Sans', sans-serif; // Fonte principal da UI
-$font-mono    : 'JetBrains Mono', monospace;     // Fonte para valores monetários e código
+// Tipografia
+$font-primary : 'Plus Jakarta Sans', sans-serif;
+$font-mono    : 'JetBrains Mono', monospace;
 
-// ---- Paleta de cores — Tema Dark ----
-$color-bg-deep        : #07070F;   // Fundo mais escuro (body)
-$color-bg-base        : #0C0C18;   // Fundo do conteúdo principal
-$color-bg-card        : #111120;   // Cards e painéis
-$color-bg-card-hover  : #16162A;   // Hover em cards
-$color-bg-sidebar     : #09090F;   // Fundo da sidebar
-$color-bg-modal       : #0E0E1E;   // Fundo de modais
-$color-bg-input       : #0A0A18;   // Fundo de inputs e selects
+// ---- Tema Dark (padrão) ----
+:root,
+[data-theme="dark"] {
+  --color-bg-deep        : #07070F;
+  --color-bg-base        : #0C0C18;
+  --color-bg-card        : #111120;
+  --color-bg-card-hover  : #16162A;
+  --color-bg-sidebar     : #09090F;
+  --color-bg-modal       : #0E0E1E;
+  --color-bg-input       : #0A0A18;
 
-// ---- Bordas ----
-$color-border         : rgba(255, 255, 255, 0.06);  // Borda padrão (sutil)
-$color-border-medium  : rgba(255, 255, 255, 0.10);  // Borda média (hover)
-$color-border-strong  : rgba(255, 255, 255, 0.16);  // Borda forte (destaque)
-$color-border-active  : rgba(124, 106, 247, 0.5);   // Borda de foco (inputs ativos)
+  --color-border         : rgba(255,255,255,0.06);
+  --color-border-medium  : rgba(255,255,255,0.10);
+  --color-border-strong  : rgba(255,255,255,0.16);
+  --color-border-active  : rgba(124,106,247,0.5);
 
-// ---- Cor de destaque (accent) — roxo ----
-$color-accent         : #7C6AF7;
-$color-accent-light   : #9D8EFF;
-$color-accent-dim     : rgba(124, 106, 247, 0.12);  // Fundo sutil de elementos ativos
-$color-accent-glow    : rgba(124, 106, 247, 0.25);  // Glow para botão principal
+  --color-accent         : #7C6AF7;
+  --color-accent-light   : #9D8EFF;
+  --color-accent-dim     : rgba(124,106,247,0.12);
+  --color-accent-glow    : rgba(124,106,247,0.25);
 
-// ---- Cores semânticas — Receitas (verde) ----
-$color-income         : #00D9A3;
-$color-income-bg      : rgba(0, 217, 163, 0.08);
-$color-income-border  : rgba(0, 217, 163, 0.2);
+  --color-income         : #00D9A3;
+  --color-income-bg      : rgba(0,217,163,0.08);
+  --color-income-border  : rgba(0,217,163,0.2);
+  --color-expense        : #FF5B7F;
+  --color-expense-bg     : rgba(255,91,127,0.08);
+  --color-expense-border : rgba(255,91,127,0.2);
+  --color-balance        : #60A5FA;
+  --color-balance-bg     : rgba(96,165,250,0.08);
+  --color-balance-border : rgba(96,165,250,0.2);
 
-// ---- Cores semânticas — Despesas (vermelho-rosa) ----
-$color-expense        : #FF5B7F;
-$color-expense-bg     : rgba(255, 91, 127, 0.08);
-$color-expense-border : rgba(255, 91, 127, 0.2);
+  --color-text-primary   : #EEEEFF;
+  --color-text-secondary : #8888AA;
+  --color-text-muted     : #44445A;
 
-// ---- Cores semânticas — Saldo (azul) ----
-$color-balance        : #60A5FA;
-$color-balance-bg     : rgba(96, 165, 250, 0.08);
-$color-balance-border : rgba(96, 165, 250, 0.2);
+  --shadow-card   : 0 1px 3px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.2);
+  --shadow-modal  : 0 32px 64px rgba(0,0,0,0.7), 0 0 0 1px var(--color-border);
+  --shadow-accent : 0 0 24px var(--color-accent-glow);
+}
 
-// ---- Hierarquia de texto ----
-$color-text-primary   : #EEEEFF; // Texto principal (alta legibilidade)
-$color-text-secondary : #8888AA; // Texto secundário (labels, metadados)
-$color-text-muted     : #44445A; // Texto desativado (placeholders, hints)
+// ---- Tema Light ----
+[data-theme="light"] {
+  --color-bg-deep        : #F0F0F8;
+  --color-bg-base        : #F5F5FC;
+  --color-bg-card        : #FFFFFF;
+  --color-bg-card-hover  : #F8F8FF;
+  --color-bg-sidebar     : #EBEBF5;
+  --color-bg-modal       : #FFFFFF;
+  --color-bg-input       : #F0F0F8;
 
-// ---- Escala de espaçamento (base 4px) ----
-$space-1  :  4px;
-$space-2  :  8px;
-$space-3  : 12px;
-$space-4  : 16px;
-$space-5  : 20px;
-$space-6  : 24px;
-$space-8  : 32px;
-$space-10 : 40px;
-$space-12 : 48px;
-$space-16 : 64px;
+  --color-border         : rgba(0,0,0,0.07);
+  --color-border-medium  : rgba(0,0,0,0.12);
+  --color-border-strong  : rgba(0,0,0,0.18);
+  --color-border-active  : rgba(100,82,230,0.45);
 
-// ---- Border radius ----
-$radius-sm   :  6px;
-$radius-md   : 10px;
-$radius-lg   : 14px;
-$radius-xl   : 20px;
-$radius-full : 9999px; // Pill — bordas completamente arredondadas
+  --color-accent         : #6452E6;
+  --color-accent-light   : #7C6AF7;
+  --color-accent-dim     : rgba(100,82,230,0.08);
+  --color-accent-glow    : rgba(100,82,230,0.2);
 
-// ---- Layout ----
+  --color-income         : #00A87D;
+  --color-income-bg      : rgba(0,168,125,0.08);
+  --color-income-border  : rgba(0,168,125,0.2);
+  --color-expense        : #E03060;
+  --color-expense-bg     : rgba(224,48,96,0.08);
+  --color-expense-border : rgba(224,48,96,0.2);
+  --color-balance        : #2563EB;
+  --color-balance-bg     : rgba(37,99,235,0.08);
+  --color-balance-border : rgba(37,99,235,0.2);
+
+  --color-text-primary   : #1A1A2E;
+  --color-text-secondary : #5A5A7A;
+  --color-text-muted     : #9A9AB0;
+
+  --shadow-card   : 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-modal  : 0 16px 48px rgba(0,0,0,0.15), 0 0 0 1px var(--color-border);
+  --shadow-accent : 0 0 20px var(--color-accent-glow);
+}
+
+// ---- Mapeamento SCSS das CSS variables ----
+// Os módulos SCSS usam estas variáveis SCSS que apontam para as CSS vars.
+// Ao mudar o tema, as CSS vars mudam automaticamente sem recompilação.
+$color-bg-deep        : var(--color-bg-deep);
+$color-bg-base        : var(--color-bg-base);
+$color-bg-card        : var(--color-bg-card);
+$color-bg-card-hover  : var(--color-bg-card-hover);
+$color-bg-sidebar     : var(--color-bg-sidebar);
+$color-bg-modal       : var(--color-bg-modal);
+$color-bg-input       : var(--color-bg-input);
+
+$color-border         : var(--color-border);
+$color-border-medium  : var(--color-border-medium);
+$color-border-strong  : var(--color-border-strong);
+$color-border-active  : var(--color-border-active);
+
+$color-accent         : var(--color-accent);
+$color-accent-light   : var(--color-accent-light);
+$color-accent-dim     : var(--color-accent-dim);
+$color-accent-glow    : var(--color-accent-glow);
+
+$color-income         : var(--color-income);
+$color-income-bg      : var(--color-income-bg);
+$color-income-border  : var(--color-income-border);
+$color-expense        : var(--color-expense);
+$color-expense-bg     : var(--color-expense-bg);
+$color-expense-border : var(--color-expense-border);
+$color-balance        : var(--color-balance);
+$color-balance-bg     : var(--color-balance-bg);
+$color-balance-border : var(--color-balance-border);
+
+$color-text-primary   : var(--color-text-primary);
+$color-text-secondary : var(--color-text-secondary);
+$color-text-muted     : var(--color-text-muted);
+
+$shadow-card   : var(--shadow-card);
+$shadow-modal  : var(--shadow-modal);
+$shadow-accent : var(--shadow-accent);
+
+// ---- Tokens estáticos (não mudam com o tema) ----
+$space-1  :  4px; $space-2  :  8px; $space-3  : 12px; $space-4  : 16px;
+$space-5  : 20px; $space-6  : 24px; $space-8  : 32px; $space-10 : 40px;
+$space-12 : 48px; $space-16 : 64px;
+
+$radius-sm   :  6px; $radius-md   : 10px; $radius-lg   : 14px;
+$radius-xl   : 20px; $radius-full : 9999px;
+
 $sidebar-width     : 220px;
 $header-height     :  64px;
 $content-max-width : 1200px;
 
-// ---- Sombras ----
-$shadow-card    : 0 1px 3px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.2);
-$shadow-modal   : 0 32px 64px rgba(0,0,0,0.7), 0 0 0 1px $color-border;
-$shadow-accent  : 0 0 24px $color-accent-glow;
-
-// ---- Transições ----
-$transition-fast   : 0.12s ease;                          // Hover rápido
-$transition-base   : 0.22s ease;                          // Transição padrão
-$transition-smooth : 0.35s cubic-bezier(0.4, 0, 0.2, 1); // Animação suave (Material-like)
+$transition-fast   : 0.12s ease;
+$transition-base   : 0.22s ease;
+$transition-smooth : 0.35s cubic-bezier(0.4, 0, 0.2, 1);

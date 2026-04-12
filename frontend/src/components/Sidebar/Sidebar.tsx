@@ -8,7 +8,8 @@
 import type { AppView } from '@/components/Sidebar/Sidebar';
 import { WalletWidget } from '@/components/WalletWidget/WalletWidget';
 import styles from './Sidebar.module.scss';
-import { LayoutDashboard, BarChart2, LogOut } from 'lucide-react';
+import { LayoutDashboard, BarChart2, LogOut, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 // AppView define as telas disponíveis na aplicação.
 // Exportado daqui pois é o ponto central de navegação.
@@ -68,6 +69,9 @@ export function Sidebar({ activeView, onViewChange, userName, onLogout }: Sideba
       <div className={styles.walletArea}>
         <WalletWidget />
       </div>
+
+      {/* Toggle de tema dark/light */}
+      <ThemeToggle />
 
       {/* Rodapé: nome do usuário + botão de logout */}
       <div className={styles.footer}>

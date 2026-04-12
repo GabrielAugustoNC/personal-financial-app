@@ -19,6 +19,7 @@ import { SummaryCards }         from '@/components/SummaryCard/SummaryCard';
 import { TransactionList }      from '@/components/TransactionList/TransactionList';
 import { TransactionForm }      from '@/components/TransactionForm/TransactionForm';
 import { PeriodSelector }       from '@/components/PeriodSelector/PeriodSelector';
+import { NotificationBanner }   from '@/components/NotificationBanner/NotificationBanner';
 import {
   AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
@@ -258,6 +259,9 @@ export function Dashboard() {
           </button>
         </div>
       </header>
+
+      {/* Alertas de metas e saldo projetado */}
+      <NotificationBanner />
 
       {filterOpen && (
         <div className={`${styles.filterPanel} fade-in`}>

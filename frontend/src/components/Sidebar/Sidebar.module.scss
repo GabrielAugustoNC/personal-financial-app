@@ -159,3 +159,25 @@
     color     : $color-expense;
   }
 }
+
+// ---- Theme toggle button ----
+.themeToggle {
+  display      : flex;
+  align-items  : center;
+  gap          : $space-2;
+  width        : 100%;
+  padding      : $space-2 $space-3;
+  border-radius: $radius-md;
+  font-size    : 0.82rem;
+  font-weight  : 500;
+  color        : $color-text-muted;
+  transition   : all $transition-fast;
+  margin-bottom: $space-2;
+
+  &:hover {
+    background: rgba(255,255,255,0.05);
+    color     : $color-text-secondary;
+  }
+
+  span { flex: 1; text-align: left; }
+}

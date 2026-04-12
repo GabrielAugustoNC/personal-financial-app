@@ -8,15 +8,21 @@
 }
 
 .modal {
-  width: 100%; max-width: 540px;
-  background: $color-bg-modal;
-  border: 1px solid $color-border-medium;
-  border-radius: $radius-xl;
-  box-shadow: $shadow-modal;
-  overflow: hidden;
-  max-height: 92vh;
-  display: flex;
+  width         : min(92vw, 860px);
+  min-width     : min(60vw, 540px);
+  background    : $color-bg-modal;
+  border        : 1px solid $color-border-medium;
+  border-radius : $radius-xl;
+  box-shadow    : $shadow-modal;
+  overflow      : hidden;
+  max-height    : 90vh;
+  display       : flex;
   flex-direction: column;
+
+  @include mobile {
+    width    : 96vw;
+    min-width: unset;
+  }
 }
 
 // ---- Header / Tabs ----

@@ -11,7 +11,8 @@ import styles from './AnalyticsDashboard.module.scss';
 import { CategoryOverview }  from './CategoryOverview';
 import { GoalProgressPanel } from './GoalProgress';
 import { GoalManager }     from '@/components/Goals/GoalManager';
-import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
+import { PeriodSelector }       from '@/components/PeriodSelector/PeriodSelector';
+import { generatePDFReport }    from '@/utils/reportGenerator';
 import { PERIOD_OPTIONS } from '@/types/wallet';
 import {
   BarChart, Bar, Cell,
@@ -25,7 +26,7 @@ import {
   TrendingUp, TrendingDown, Minus,
   AlertTriangle, AlertCircle, Info,
   ArrowUpRight, ArrowDownRight,
-  Sparkles,
+  Sparkles, FileDown,
 } from 'lucide-react';
 
 // ---- Paleta de cores para gráficos ----
@@ -281,6 +282,19 @@ export function AnalyticsDashboard() {
     );
   };
 
+  const [exporting, setExporting] = useState<boolean>(false);
+
+  // Gera e faz download do relatório PDF com os dados atuais do Analytics
+  async function handleExportPDF(): Promise<void> {
+    if (!data) return;
+    setExporting(true);
+    try {
+      await generatePDFReport(data, periodLabel);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className={styles.dashboard}>
       <header className={styles.header}>
@@ -288,7 +302,25 @@ export function AnalyticsDashboard() {
           <h1 className={styles.pageTitle}>Analytics</h1>
           <p className={styles.pageSubtitle}>Exibindo dados dos últimos {periodLabel} · meses sem dados são ignorados</p>
         </div>
-        <PeriodSelector value={period} onChange={setPeriod} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <PeriodSelector value={period} onChange={setPeriod} />
+          <button
+            onClick={handleExportPDF}
+            disabled={exporting || !data}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: '10px',
+              background: 'var(--color-accent)', color: '#fff',
+              fontSize: '0.8rem', fontWeight: 500, border: 'none',
+              cursor: exporting ? 'wait' : 'pointer',
+              opacity: (exporting || !data) ? 0.55 : 1,
+              fontFamily: 'inherit', transition: 'filter 0.15s ease',
+            }}
+          >
+            <FileDown size={14} />
+            {exporting ? 'Gerando...' : 'Exportar PDF'}
+          </button>
+        </div>
       </header>
 
       {/* Grid principal */}

@@ -8,14 +8,20 @@
 }
 
 .modal {
-  width: 100%; max-width: 600px;
-  max-height: 90vh;
-  background: $color-bg-modal;
-  border: 1px solid $color-border-medium;
-  border-radius: $radius-xl;
-  box-shadow: $shadow-modal;
+  width         : min(92vw, 900px);
+  min-width     : min(60vw, 600px);
+  max-height    : 90vh;
+  background    : $color-bg-modal;
+  border        : 1px solid $color-border-medium;
+  border-radius : $radius-xl;
+  box-shadow    : $shadow-modal;
   @include flex-col;
-  overflow: hidden;
+  overflow      : hidden;
+
+  @include mobile {
+    width    : 96vw;
+    min-width: unset;
+  }
 }
 
 .header {
