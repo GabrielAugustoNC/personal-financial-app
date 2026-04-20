@@ -3,8 +3,6 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import type {
   AttentionPoint,
   BalanceProjection,
-  CategoryBreakdown,
-  MonthlyEvolution,
   TransactionComparison,
 } from '@/types/analytics';
 import { formatCurrency } from '@/utils/format';
@@ -200,6 +198,10 @@ export function AnalyticsDashboard() {
   const data = overview.data;
   const isLoading = overview.status === 'loading' || overview.status === 'idle';
 
+  // useState DEVE vir antes de qualquer early return — regra dos hooks do React.
+  // Mover para cá garante que o número de hooks é sempre o mesmo em todos os renders.
+  const [exporting, setExporting] = useState<boolean>(false);
+
   if (isLoading) {
     return (
       <div className={styles.dashboard}>
@@ -281,8 +283,6 @@ export function AnalyticsDashboard() {
       </div>
     );
   };
-
-  const [exporting, setExporting] = useState<boolean>(false);
 
   // Gera e faz download do relatório PDF com os dados atuais do Analytics
   async function handleExportPDF(): Promise<void> {
@@ -405,7 +405,7 @@ export function AnalyticsDashboard() {
             <span className={styles.sectionLabel}>Metas do mês</span>
             <span className={styles.sectionHint}>Clique no limite para editar</span>
           </div>
-          <GoalManager />
+          <GoalProgressPanel />
         </div>
 
         {/* Linha — saldo mensal */}
