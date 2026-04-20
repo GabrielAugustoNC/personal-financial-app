@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import type {
   AttentionPoint,
@@ -10,7 +11,6 @@ import { formatCurrency } from '@/utils/format';
 import styles from './AnalyticsDashboard.module.scss';
 import { CategoryOverview }  from './CategoryOverview';
 import { GoalProgressPanel } from './GoalProgress';
-import { GoalManager }     from '@/components/Goals/GoalManager';
 import { PeriodSelector }       from '@/components/PeriodSelector/PeriodSelector';
 import { generatePDFReport }    from '@/utils/reportGenerator';
 import { PERIOD_OPTIONS } from '@/types/wallet';

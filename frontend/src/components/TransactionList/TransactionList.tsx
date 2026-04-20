@@ -7,7 +7,7 @@ import { useState } from 'react';
 import type { Transaction } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
 import styles from './TransactionList.module.scss';
-import { Trash2, Pencil, CreditCard } from 'lucide-react';
+import { Trash2, Pencil, CreditCard, RefreshCw } from 'lucide-react';
 
 interface TransactionListProps {
   transactions      : Transaction[];
@@ -125,7 +125,17 @@ export function TransactionList({
           <div className={styles.dot} />
 
           <div className={styles.info}>
-            <span className={styles.title}>{transaction.title}</span>
+            <div className={styles.titleRow}>
+              <span className={styles.title}>{transaction.title}</span>
+              {transaction.recurring && (
+                <span className={styles.recurringBadge} title="Transação recorrente">
+                  <RefreshCw size={10} />
+                  {transaction.frequency === 'weekly' ? 'Semanal'
+                    : transaction.frequency === 'yearly' ? 'Anual'
+                    : 'Mensal'}
+                </span>
+              )}
+            </div>
             <div className={styles.meta}>
               {/* Categoria editável inline ao clicar */}
               <CategoryCell

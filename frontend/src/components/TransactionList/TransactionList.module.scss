@@ -209,3 +209,26 @@
     color      : $color-balance !important;
   }
 }
+
+// ---- Recorrência ----
+
+.titleRow {
+  display    : flex;
+  align-items: center;
+  gap        : $space-2;
+  flex-wrap  : wrap;
+}
+
+.recurringBadge {
+  display      : inline-flex;
+  align-items  : center;
+  gap          : 3px;
+  padding      : 1px $space-2;
+  border-radius: $radius-full;
+  background   : $color-accent-dim;
+  border       : 1px solid rgba(124,106,247,0.25);
+  color        : $color-accent-light;
+  font-size    : 0.65rem;
+  font-weight  : 600;
+  white-space  : nowrap;
+}

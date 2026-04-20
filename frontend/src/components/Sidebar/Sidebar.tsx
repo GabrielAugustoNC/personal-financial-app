@@ -1,56 +1,69 @@
 // ============================================================
 // Sidebar — menu lateral de navegação principal da aplicação.
-// Contém apenas dois destinos: Dashboard e Analytics.
-// Os filtros de tipo (Receitas/Despesas) foram movidos para dentro do Dashboard.
-// Inclui o WalletWidget na base para exibição permanente do saldo.
+// Contém Dashboard, Analytics e Configurações.
+// Inclui o WalletWidget, toggle de tema e rodapé com logout.
 // ============================================================
 
-import type { AppView } from '@/components/Sidebar/Sidebar';
 import { WalletWidget } from '@/components/WalletWidget/WalletWidget';
+import { useTheme }     from '@/hooks/useTheme';
 import styles from './Sidebar.module.scss';
-import { LayoutDashboard, BarChart2, LogOut, Moon, Sun } from 'lucide-react';
-import { useTheme } from '@/hooks/useTheme';
+import { LayoutDashboard, BarChart2, Settings, LogOut, Moon, Sun } from 'lucide-react';
 
 // AppView define as telas disponíveis na aplicação.
 // Exportado daqui pois é o ponto central de navegação.
-export type AppView = 'dashboard' | 'analytics';
+export type AppView = 'dashboard' | 'analytics' | 'settings';
 
 // NavItem define a estrutura de cada item de navegação da sidebar.
 interface NavItem {
-  label : string;       // Texto exibido no botão
-  view  : AppView;      // Tela para a qual o item navega
-  icon  : React.ReactNode; // Ícone Lucide associado ao item
+  label : string;
+  view  : AppView;
+  icon  : React.ReactNode;
 }
 
-// Lista de itens de navegação — extensível para novas telas no futuro.
+// Lista de itens de navegação — extensível para novas telas.
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', view: 'dashboard', icon: <LayoutDashboard size={16} /> },
-  { label: 'Analytics', view: 'analytics', icon: <BarChart2 size={16} /> },
+  { label: 'Dashboard',     view: 'dashboard', icon: <LayoutDashboard size={16} /> },
+  { label: 'Analytics',     view: 'analytics', icon: <BarChart2 size={16} /> },
+  { label: 'Configurações', view: 'settings',  icon: <Settings size={16} /> },
 ];
 
-// Props da Sidebar:
-// - activeView: tela atualmente ativa (controlada pelo App)
-// - onViewChange: callback para navegar entre telas
+// ThemeToggle — botão de alternância entre tema dark e light.
+// Usa o hook useTheme para ler o tema atual e aplicar a troca.
+function ThemeToggle() {
+  const { isDark, toggle } = useTheme();
+  return (
+    <button
+      className={styles.themeToggle}
+      onClick={toggle}
+      title={isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+    >
+      {isDark
+        ? <><Sun  size={14} /><span>Tema claro</span></>
+        : <><Moon size={14} /><span>Tema escuro</span></>}
+    </button>
+  );
+}
+
+// Props da Sidebar
 interface SidebarProps {
   activeView   : AppView;
   onViewChange : (view: AppView) => void;
-  userName     : string;   // nome do usuário autenticado
+  userName     : string;
   onLogout     : () => void;
 }
 
-// Sidebar é um componente controlado — não mantém estado de navegação interno.
-// O App.tsx controla qual tela está ativa e passa via props.
-// Analogia Angular: componente de navegação com [routerLink] e [routerLinkActive]
+// Sidebar é um componente controlado — o App.tsx gerencia qual tela está ativa.
+// Analogia Angular: componente de navegação com [routerLink] e [routerLinkActive].
 export function Sidebar({ activeView, onViewChange, userName, onLogout }: SidebarProps) {
   return (
     <aside className={styles.sidebar}>
-      {/* Logo da aplicação */}
+      {/* Logo */}
       <div className={styles.logo}>
         <span className={styles.logoIcon}>₿</span>
         <span className={styles.logoText}>Finanças</span>
       </div>
 
-      {/* Itens de navegação — ativo é destacado com estilo diferente */}
+      {/* Navegação principal */}
       <nav className={styles.nav}>
         <span className={styles.navLabel}>Menu</span>
         {NAV_ITEMS.map((item) => (
@@ -65,15 +78,15 @@ export function Sidebar({ activeView, onViewChange, userName, onLogout }: Sideba
         ))}
       </nav>
 
-      {/* WalletWidget fixo na base — visível em todas as telas */}
+      {/* WalletWidget — saldo manual sempre visível */}
       <div className={styles.walletArea}>
         <WalletWidget />
       </div>
 
-      {/* Toggle de tema dark/light */}
+      {/* Toggle de tema */}
       <ThemeToggle />
 
-      {/* Rodapé: nome do usuário + botão de logout */}
+      {/* Rodapé com usuário e logout */}
       <div className={styles.footer}>
         <div className={styles.userInfo}>
           <span className={styles.userName}>{userName}</span>

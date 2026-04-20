@@ -6,27 +6,26 @@ import (
 	"time"
 
 	"github.com/user/financas-api/config"
+	"github.com/user/financas-api/repositories"
 	"github.com/user/financas-api/routes"
+	"github.com/user/financas-api/services"
 
 	"github.com/gin-gonic/gin"
 )
 
 // main é o ponto de entrada da aplicação.
-// Responsável por carregar configurações, conectar ao banco de dados
-// e iniciar o servidor HTTP com todas as rotas configuradas.
+// Responsável por carregar configurações, conectar ao banco,
+// processar recorrências pendentes e iniciar o servidor HTTP.
 // Análogo ao Program.cs no .NET — bootstrap da aplicação.
 func main() {
 	// Carrega variáveis de ambiente do arquivo .env.
-	// Analogia .NET: builder.Configuration / appsettings.json
 	cfg := config.Load()
 
-	// Cria contexto com timeout de 10 segundos para a conexão inicial.
-	// Em Go, contextos controlam cancelamento e prazos de operações assíncronas.
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Cria contexto com timeout para a inicialização.
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	// Estabelece conexão com o MongoDB e valida com ping.
-	// Analogia .NET: services.AddDbContext<AppDbContext>()
+	// Conecta ao MongoDB.
 	db, err := config.ConnectMongoDB(ctx, cfg)
 	if err != nil {
 		log.Fatalf("❌ Falha ao conectar ao MongoDB: %v", err)
@@ -34,12 +33,22 @@ func main() {
 
 	log.Println("✅ Conectado ao MongoDB com sucesso")
 
-	// Inicializa o router Gin — framework HTTP leve e performático.
-	// Analogia .NET: WebApplication.CreateBuilder().Build()
+	// Processa transações recorrentes vencidas no startup.
+	// Garante que lançamentos pendentes sejam criados mesmo após
+	// períodos de inatividade do servidor (ex: reinicializações).
+	// Analogia .NET: IHostedService.StartAsync() com lógica de catch-up.
+	txRepo := repositories.NewMongoTransactionRepository(db)
+	recurringService := services.NewRecurringService(txRepo)
+	if created, err := recurringService.ProcessDue(context.Background()); err != nil {
+		log.Printf("⚠️  Erro ao processar recorrências: %v", err)
+	} else if created > 0 {
+		log.Printf("🔁 %d transações recorrentes criadas automaticamente", created)
+	}
+
+	// Inicializa o router Gin.
 	router := gin.Default()
 
-	// Registra todas as rotas e injeta as dependências (DI manual).
-	// Analogia .NET: Program.cs — app.MapControllers() + builder.Services
+	// Registra todas as rotas e injeta as dependências.
 	routes.Setup(router, db)
 
 	log.Printf("🚀 Servidor rodando em http://localhost:%s\n", cfg.Port)

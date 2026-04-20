@@ -6,6 +6,7 @@ import type {
   UpdateTransactionInput,
   ImportTransactionItem,
   BulkImportResponse,
+  RecurringFrequency,
 } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { transactionService } from '@/services/transactionService';
@@ -29,8 +30,14 @@ interface TransactionFormProps {
 }
 
 interface FormState {
-  title: string; amount: string; type: TransactionType;
-  category: string; description: string; date: string;
+  title      : string;
+  amount     : string;
+  type       : TransactionType;
+  category   : string;
+  description: string;
+  date       : string;
+  recurring  : boolean;
+  frequency  : RecurringFrequency;
 }
 
 interface ImportState {
@@ -50,9 +57,14 @@ interface SuggestionRow {
 // ---- Constantes ----
 
 const DEFAULT_FORM: FormState = {
-  title: '', amount: '', type: 'expense',
-  category: '', description: '',
-  date: new Date().toISOString().substring(0, 10),
+  title      : '',
+  amount     : '',
+  type       : 'expense',
+  category   : '',
+  description: '',
+  date       : new Date().toISOString().substring(0, 10),
+  recurring  : false,
+  frequency  : 'monthly',
 };
 
 const DEFAULT_IMPORT: ImportState = {
@@ -89,9 +101,14 @@ export function TransactionForm({ onSubmit, onClose, onRefetch, editData }: Tran
   useEffect(() => {
     if (editData) {
       setForm({
-        title: editData.title, amount: String(editData.amount),
-        type: editData.type, category: editData.category,
-        description: editData.description, date: formatDateInput(editData.date),
+        title      : editData.title,
+        amount     : String(editData.amount),
+        type       : editData.type,
+        category   : editData.category,
+        description: editData.description,
+        date       : formatDateInput(editData.date),
+        recurring  : editData.recurring ?? false,
+        frequency  : (editData.frequency as RecurringFrequency) ?? 'monthly',
       });
     }
   }, [editData]);
@@ -126,9 +143,16 @@ export function TransactionForm({ onSubmit, onClose, onRefetch, editData }: Tran
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ): void {
-    const { name, value } = e.target;
-    if (name === 'type') setForm(prev => ({ ...prev, type: value as TransactionType, category: '' }));
-    else setForm(prev => ({ ...prev, [name]: value }));
+    const { name, value, type: inputType } = e.target as HTMLInputElement;
+    if (name === 'type') {
+      setForm(prev => ({ ...prev, type: value as TransactionType, category: '' }));
+    } else if (inputType === 'checkbox') {
+      // checkbox usa checked em vez de value
+      const checked = (e.target as HTMLInputElement).checked;
+      setForm(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
@@ -138,10 +162,14 @@ export function TransactionForm({ onSubmit, onClose, onRefetch, editData }: Tran
     if (isNaN(parsedAmount) || parsedAmount <= 0) { setFormError('Informe um valor válido maior que zero.'); return; }
     if (!form.category) { setFormError('Selecione uma categoria.'); return; }
     const payload: CreateTransactionInput = {
-      title: form.title.trim(), amount: parsedAmount,
-      type: form.type, category: form.category,
+      title      : form.title.trim(),
+      amount     : parsedAmount,
+      type       : form.type,
+      category   : form.category,
       description: form.description.trim(),
-      date: new Date(form.date).toISOString(),
+      date       : new Date(form.date).toISOString(),
+      recurring  : form.recurring,
+      frequency  : form.recurring ? form.frequency : undefined,
     };
     setIsSubmitting(true);
     try { await onSubmit(payload); onClose(); }
@@ -326,6 +354,49 @@ export function TransactionForm({ onSubmit, onClose, onRefetch, editData }: Tran
               </label>
               <textarea id="description" name="description" className={styles.textarea} value={form.description} onChange={handleChange} placeholder="Detalhes adicionais..." rows={2} />
             </div>
+
+            {/* ---- Recorrência ---- */}
+            <div className={styles.recurringBlock}>
+              <label className={styles.recurringToggle}>
+                <input
+                  type="checkbox"
+                  name="recurring"
+                  className={styles.recurringCheckbox}
+                  checked={form.recurring}
+                  onChange={handleChange}
+                />
+                <span className={styles.recurringToggleLabel}>
+                  <RefreshCw size={13} />
+                  Transação recorrente
+                </span>
+              </label>
+
+              {form.recurring && (
+                <div className={styles.recurringOptions}>
+                  <span className={styles.recurringHint}>Repetir automaticamente:</span>
+                  <div className={styles.frequencyBtns}>
+                    {(['weekly', 'monthly', 'yearly'] as RecurringFrequency[]).map(freq => (
+                      <button
+                        key={freq}
+                        type="button"
+                        className={`${styles.freqBtn} ${form.frequency === freq ? styles.freqActive : ''}`}
+                        onClick={() => setForm(prev => ({ ...prev, frequency: freq }))}
+                      >
+                        {freq === 'weekly' ? 'Semanal' : freq === 'monthly' ? 'Mensal' : 'Anual'}
+                      </button>
+                    ))}
+                  </div>
+                  <p className={styles.recurringInfo}>
+                    {form.frequency === 'weekly'
+                      ? 'Um novo lançamento será criado automaticamente a cada 7 dias.'
+                      : form.frequency === 'monthly'
+                      ? 'Um novo lançamento será criado automaticamente todo mês.'
+                      : 'Um novo lançamento será criado automaticamente todo ano.'}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {formError && <p className={styles.error}>{formError}</p>}
             <div className={styles.formActions}>
               <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancelar</button>

@@ -5,6 +5,9 @@
 // Analogia Angular: interfaces em models/ ou shared/types
 // ============================================================
 
+// RecurringFrequency define as frequências suportadas para transações automáticas.
+export type RecurringFrequency = 'weekly' | 'monthly' | 'yearly';
+
 // TransactionType representa os dois tipos possíveis de uma transação.
 // Uso de union type em vez de enum para serialização direta com o backend.
 export type TransactionType = 'income' | 'expense';
@@ -19,8 +22,11 @@ export interface Transaction {
   category    : string;
   description : string;
   date        : string;
-  created_at  : string;
-  updated_at  : string;
+  created_at    : string;
+  updated_at    : string;
+  recurring     : boolean;
+  frequency?    : RecurringFrequency;
+  next_due_date?: string;
 }
 
 // CreateTransactionInput define os dados necessários para criar uma nova transação.
@@ -32,6 +38,8 @@ export interface CreateTransactionInput {
   category    : string;
   description : string;
   date        : string;
+  recurring?  : boolean;
+  frequency?  : RecurringFrequency;
 }
 
 // UpdateTransactionInput define os dados para atualização parcial de uma transação.
@@ -43,6 +51,8 @@ export interface UpdateTransactionInput {
   category?    : string;
   description? : string;
   date?        : string;
+  recurring?   : boolean;
+  frequency?   : RecurringFrequency;
 }
 
 // TransactionFilter define os parâmetros aceitos para filtrar a listagem de transações.
@@ -135,4 +145,22 @@ export interface BulkImportResponse {
   imported : number;
   total    : number;
   error?   : string;
+}
+
+// ---- Paginação ----
+
+// PaginatedResponse<T> é o envelope de resposta para listagens paginadas.
+// Espelha o PaginatedTransactions do backend Go.
+export interface PaginatedResponse<T> {
+  data        : T[];
+  total       : number;
+  page        : number;
+  limit       : number;
+  total_pages : number;
+}
+
+// PaginationParams define os parâmetros de paginação para query string.
+export interface PaginationParams {
+  page  : number;
+  limit : number;
 }
