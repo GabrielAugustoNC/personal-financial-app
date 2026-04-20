@@ -22,6 +22,16 @@ const (
 	Expense TransactionType = "expense" // Despesa
 )
 
+// RecurringFrequency define a frequência de lançamentos automáticos.
+// Analogia .NET: enum RecurringFrequency com valores string.
+type RecurringFrequency string
+
+const (
+	FrequencyWeekly  RecurringFrequency = "weekly"
+	FrequencyMonthly RecurringFrequency = "monthly"
+	FrequencyYearly  RecurringFrequency = "yearly"
+)
+
 // Transaction é a entidade principal que representa um lançamento financeiro.
 // Mapeada diretamente para a collection "transactions" no MongoDB.
 // As tags `bson` controlam os nomes dos campos no banco.
@@ -35,6 +45,9 @@ type Transaction struct {
 	Category    string             `json:"category"    bson:"category"`
 	Description string             `json:"description" bson:"description"`
 	Date        time.Time          `json:"date"        bson:"date"`
+	Recurring   bool               `json:"recurring"   bson:"recurring"`                 // true = lançamento recorrente
+	Frequency   RecurringFrequency `json:"frequency"   bson:"frequency,omitempty"`       // frequência do lançamento automático
+	NextDueDate *time.Time         `json:"next_due_date" bson:"next_due_date,omitempty"` // data do próximo lançamento automático
 	CreatedAt   time.Time          `json:"created_at"  bson:"created_at"`
 	UpdatedAt   time.Time          `json:"updated_at"  bson:"updated_at"`
 }
@@ -43,35 +56,52 @@ type Transaction struct {
 // Validado automaticamente pelo Gin via tags `binding`.
 // Analogia .NET: record CreateTransactionRequest com DataAnnotations ([Required], [Range])
 type CreateTransactionInput struct {
-	Title       string          `json:"title"       binding:"required,min=3,max=100"`
-	Amount      float64         `json:"amount"      binding:"required,gt=0"`
-	Type        TransactionType `json:"type"        binding:"required,oneof=income expense"`
-	Category    string          `json:"category"    binding:"required"`
-	Description string          `json:"description"`
-	Date        time.Time       `json:"date"        binding:"required"`
+	Title       string             `json:"title"       binding:"required,min=3,max=100"`
+	Amount      float64            `json:"amount"      binding:"required,gt=0"`
+	Type        TransactionType    `json:"type"        binding:"required,oneof=income expense"`
+	Category    string             `json:"category"    binding:"required"`
+	Description string             `json:"description"`
+	Date        time.Time          `json:"date"        binding:"required"`
+	Recurring   bool               `json:"recurring"`
+	Frequency   RecurringFrequency `json:"frequency"   binding:"omitempty,oneof=weekly monthly yearly"`
 }
 
 // UpdateTransactionInput é o DTO para atualização parcial de uma transação.
 // Todos os campos são opcionais — apenas os enviados serão atualizados (PATCH semantics).
 // Analogia .NET: record UpdateTransactionRequest com campos anuláveis
 type UpdateTransactionInput struct {
-	Title       string          `json:"title"`
-	Amount      float64         `json:"amount"`
-	Type        TransactionType `json:"type"`
-	Category    string          `json:"category"`
-	Description string          `json:"description"`
-	Date        time.Time       `json:"date"`
+	Title       string             `json:"title"`
+	Amount      float64            `json:"amount"`
+	Type        TransactionType    `json:"type"`
+	Category    string             `json:"category"`
+	Description string             `json:"description"`
+	Date        time.Time          `json:"date"`
+	Recurring   *bool              `json:"recurring"`
+	Frequency   RecurringFrequency `json:"frequency"`
 }
 
-// TransactionFilter define os parâmetros de filtragem para listagem de transações.
+// TransactionFilter define os parâmetros de filtragem e paginação para listagem.
 // Vinculado via query string pelo Gin (tag `form`).
-// Analogia .NET: TransactionQueryParams com [FromQuery] no controller
+// Analogia .NET: TransactionQueryParams com [FromQuery] + IPagedRequest
 type TransactionFilter struct {
 	Type      TransactionType `form:"type"`
 	Category  string          `form:"category"`
 	Title     string          `form:"title"`
 	StartDate time.Time       `form:"start_date" time_format:"2006-01-02"`
 	EndDate   time.Time       `form:"end_date"   time_format:"2006-01-02"`
+	Page      int             `form:"page"`  // página atual (1-based, padrão 1)
+	Limit     int             `form:"limit"` // itens por página (padrão 20, máx 100)
+}
+
+// PaginatedTransactions é a resposta paginada da listagem de transações.
+// Contém os dados da página atual e metadados de paginação.
+// Analogia .NET: PagedResult<Transaction> com TotalCount e TotalPages
+type PaginatedTransactions struct {
+	Data       []Transaction `json:"data"`
+	Total      int64         `json:"total"`       // total de registros (sem paginação)
+	Page       int           `json:"page"`        // página atual
+	Limit      int           `json:"limit"`       // itens por página
+	TotalPages int64         `json:"total_pages"` // total de páginas
 }
 
 // TransactionSummary é o DTO de resposta com o resumo financeiro agregado.

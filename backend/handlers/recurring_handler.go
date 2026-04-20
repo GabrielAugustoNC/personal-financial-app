@@ -1,28 +1,36 @@
 // Handler de recorrências — expõe endpoint manual para processar
 // transações recorrentes vencidas sem precisar reiniciar o servidor.
 // Útil para testes e para acionar manualmente em produção.
+// Analogia .NET: endpoint de trigger de um IHostedService.
 package handlers
 
 import (
 	"net/http"
 
-	"github.com/user/financas-api/services"
 	"github.com/gin-gonic/gin"
+	"context"
 )
+
+// RecurringProcessor é a interface que o handler depende.
+// Desacopla o handler da implementação concreta do RecurringService.
+// Analogia .NET: interface IRecurringService injetada no controller.
+type RecurringProcessor interface {
+	ProcessDue(ctx context.Context) (int, error)
+}
 
 // RecurringHandler gerencia o endpoint de processamento de recorrências.
 type RecurringHandler struct {
-	service *services.RecurringService
+	service RecurringProcessor
 }
 
-func NewRecurringHandler(service *services.RecurringService) *RecurringHandler {
+// NewRecurringHandler cria o handler recebendo qualquer implementação de RecurringProcessor.
+func NewRecurringHandler(service RecurringProcessor) *RecurringHandler {
 	return &RecurringHandler{service: service}
 }
 
 // ProcessDue processa todas as transações recorrentes com NextDueDate vencida.
 // POST /api/recurring/process
 // Retorna a quantidade de transações criadas automaticamente.
-// Analogia .NET: endpoint de trigger de um IHostedService.
 func (h *RecurringHandler) ProcessDue(c *gin.Context) {
 	created, err := h.service.ProcessDue(c.Request.Context())
 	if err != nil {
