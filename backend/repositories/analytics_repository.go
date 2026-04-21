@@ -16,13 +16,15 @@ import (
 // Todas as operações usam MongoDB Aggregation Pipeline.
 // Analogia .NET: class AnalyticsRepository : IAnalyticsRepository
 type MongoAnalyticsRepository struct {
-	collection *mongo.Collection
+	collection  *mongo.Collection // transactions
+	cardDetails *mongo.Collection // card_details
 }
 
 // NewMongoAnalyticsRepository cria o repositório de analytics.
 func NewMongoAnalyticsRepository(db *mongo.Database) interfaces.AnalyticsRepository {
 	return &MongoAnalyticsRepository{
-		collection: db.Collection("transactions"),
+		collection:  db.Collection("transactions"),
+		cardDetails: db.Collection("card_details"),
 	}
 }
 
@@ -137,22 +139,32 @@ func (r *MongoAnalyticsRepository) GetMonthComparison(ctx context.Context) ([]mo
 	return comparisons, nil
 }
 
+// cardSubItem é um item de subcategoria de fatura de cartão de crédito.
+// Usado como elemento do mapa de lookup em GetCategoryBreakdown.
+type cardSubItem struct {
+	Category string
+	Amount   float64
+}
+
 // GetCategoryBreakdown retorna o total de despesas por categoria no mês atual.
+// Transações da categoria "Cartão de Crédito" que possuem subcategorias registradas
+// em card_details são expandidas — seus itens substituem o valor total da fatura.
+// Faturas sem detalhes são mantidas como "Cartão de Crédito" normalmente.
 func (r *MongoAnalyticsRepository) GetCategoryBreakdown(ctx context.Context) ([]models.CategoryBreakdown, error) {
 	now := time.Now()
 	monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 
+	// ---- Passo 1: busca todas as despesas do mês com seu ID e categoria ----
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{
 			{Key: "type", Value: "expense"},
 			{Key: "date", Value: bson.D{{Key: "$gte", Value: monthStart}}},
 		}}},
-		{{Key: "$group", Value: bson.D{
-			{Key: "_id", Value: "$category"},
-			{Key: "amount", Value: bson.D{{Key: "$sum", Value: "$amount"}}},
-			{Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}},
+		{{Key: "$project", Value: bson.D{
+			{Key: "_id", Value: 1},
+			{Key: "category", Value: 1},
+			{Key: "amount", Value: 1},
 		}}},
-		{{Key: "$sort", Value: bson.D{{Key: "amount", Value: -1}}}},
 	}
 
 	cursor, err := r.collection.Aggregate(ctx, pipeline)
@@ -161,40 +173,107 @@ func (r *MongoAnalyticsRepository) GetCategoryBreakdown(ctx context.Context) ([]
 	}
 	defer cursor.Close(ctx)
 
-	type rawResult struct {
-		Category string  `bson:"_id"`
-		Amount   float64 `bson:"amount"`
-		Count    int     `bson:"count"`
+	type rawTx struct {
+		ID       interface{} `bson:"_id"`
+		Category string      `bson:"category"`
+		Amount   float64     `bson:"amount"`
 	}
 
-	var rawResults []rawResult
-	if err := cursor.All(ctx, &rawResults); err != nil {
+	var txList []rawTx
+	if err := cursor.All(ctx, &txList); err != nil {
 		return nil, err
 	}
 
-	// Calcula o total para percentuais
-	var totalExpenses float64
-	for _, r := range rawResults {
-		totalExpenses += r.Amount
+	// ---- Passo 2: busca todos os card_details disponíveis ----
+	detailsCursor, err := r.cardDetails.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer detailsCursor.Close(ctx)
+
+	type cardDetailDoc struct {
+		TransactionID interface{}   `bson:"transaction_id"`
+		Items         []cardSubItem `bson:"items"`
 	}
 
-	breakdown := make([]models.CategoryBreakdown, 0, len(rawResults))
-	for _, r := range rawResults {
+	var allDetails []cardDetailDoc
+	if err := detailsCursor.All(ctx, &allDetails); err != nil {
+		return nil, err
+	}
+
+	// Mapa transactionID(string) → subcategorias
+	detailsMap := make(map[string][]cardSubItem)
+	for _, d := range allDetails {
+		key := fmt.Sprintf("%v", d.TransactionID)
+		detailsMap[key] = d.Items
+	}
+
+	// ---- Passo 3: agrega por categoria expandindo subcategorias do cartão ----
+	type aggEntry struct {
+		Amount float64
+		Count  int
+	}
+	agg := make(map[string]*aggEntry)
+
+	for _, tx := range txList {
+		txKey := fmt.Sprintf("%v", tx.ID)
+		items, hasDetails := detailsMap[txKey]
+
+		if tx.Category == "Cartão de Crédito" && hasDetails && len(items) > 0 {
+			// Expande a fatura nas subcategorias dos itens de detalhe
+			for _, item := range items {
+				subCat := item.Category
+				if subCat == "" {
+					subCat = "Outros"
+				}
+				if agg[subCat] == nil {
+					agg[subCat] = &aggEntry{}
+				}
+				agg[subCat].Amount += item.Amount
+				agg[subCat].Count++
+			}
+		} else {
+			// Transação normal ou cartão sem detalhes cadastrados
+			cat := tx.Category
+			if agg[cat] == nil {
+				agg[cat] = &aggEntry{}
+			}
+			agg[cat].Amount += tx.Amount
+			agg[cat].Count++
+		}
+	}
+
+	// ---- Passo 4: calcula percentuais e monta o slice de resultado ----
+	var totalExpenses float64
+	for _, entry := range agg {
+		totalExpenses += entry.Amount
+	}
+
+	breakdown := make([]models.CategoryBreakdown, 0, len(agg))
+	for cat, entry := range agg {
 		pct := 0.0
 		if totalExpenses > 0 {
-			pct = math.Round((r.Amount/totalExpenses)*1000) / 10
+			pct = math.Round((entry.Amount/totalExpenses)*1000) / 10
 		}
 		breakdown = append(breakdown, models.CategoryBreakdown{
-			Category:   r.Category,
-			Amount:     math.Round(r.Amount*100) / 100,
+			Category:   cat,
+			Amount:     math.Round(entry.Amount*100) / 100,
 			Percentage: pct,
-			Count:      r.Count,
+			Count:      entry.Count,
 		})
+	}
+
+	// Ordena por valor decrescente (insertion sort simples — N é pequeno)
+	for i := 1; i < len(breakdown); i++ {
+		for j := 0; j < len(breakdown)-i; j++ {
+			if breakdown[j].Amount < breakdown[j+1].Amount {
+				breakdown[j], breakdown[j+1] = breakdown[j+1], breakdown[j]
+			}
+		}
 	}
 
 	return breakdown, nil
 }
-
 // GetMonthlyEvolution retorna receitas e despesas dos últimos N meses.
 func (r *MongoAnalyticsRepository) GetMonthlyEvolution(ctx context.Context, months int) ([]models.MonthlyEvolution, error) {
 	now := time.Now()

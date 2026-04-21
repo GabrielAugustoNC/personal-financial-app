@@ -371,7 +371,9 @@ export function AnalyticsDashboard() {
                   </Pie>
                   <PieTooltip
                     formatter={(value: number, name: string) => [formatCurrency(value), name]}
-                    contentStyle={{ background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 12 }}
+                    contentStyle={{ background: '#111120', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 12, color: '#EEEEFF' }}
+                    itemStyle={{ color: '#EEEEFF' }}
+                    labelStyle={{ color: '#EEEEFF' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -463,13 +465,12 @@ export function AnalyticsDashboard() {
           <GoalProgressPanel />
         </div>
 
-        {/* Pontos de atenção */}
-        <div className={styles.span2}>
+        {/* Pontos de atenção e Comparativo — lado a lado */}
+        <div className={styles.span1}>
           <AttentionList points={data.attention_points} />
         </div>
 
-        {/* Comparativo vs mês anterior */}
-        <div className={styles.spanFull}>
+        <div className={styles.span2}>
           <ComparisonTable items={data.month_comparison} />
         </div>
 

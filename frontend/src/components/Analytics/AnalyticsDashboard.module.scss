@@ -3,7 +3,6 @@
   flex    : 1;
   gap     : $space-6;
   padding : $space-8;
-  max-width: $content-max-width;
   width   : 100%;
   animation: fadeIn 0.3s ease both;
 
@@ -37,8 +36,8 @@
 }
 
 .spanFull { grid-column: 1 / -1; }
-.span2    { grid-column: span 2; @include mobile { grid-column: 1; } }
-.span1    { grid-column: span 1; }
+.span2    { grid-column: span 2; display: flex; flex-direction: column; @include mobile { grid-column: 1; } }
+.span1    { grid-column: span 1; display: flex; flex-direction: column; }
 
 // ---- Card base ----
 .card {
@@ -182,6 +181,7 @@
   @include flex-col;
   gap    : $space-4;
   padding: $space-5 $space-6;
+  height : 100%;  // ocupa toda a altura da célula do grid
 }
 
 .attentionList { @include flex-col; gap: $space-2; }
@@ -250,6 +250,7 @@
   @include flex-col;
   gap    : $space-4;
   padding: $space-5 $space-6;
+  height : 100%;  // ocupa toda a altura da célula do grid
 }
 
 .compareList {
@@ -392,4 +393,17 @@
   border-radius : $radius-lg;
 
   &:first-child, &:last-child { grid-column: 1 / -1; height: 120px; }
+}
+
+// Cabeçalho de seção com label + dica
+.sectionHeaderRow {
+  @include flex-between;
+  align-items: center;
+  margin-bottom: $space-4;
+}
+
+.sectionHint {
+  font-size  : 0.7rem;
+  color      : $color-text-muted;
+  font-style : italic;
 }

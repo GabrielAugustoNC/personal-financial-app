@@ -1,0 +1,202 @@
+.page {
+  display  : flex;
+  flex-direction: column;
+  flex     : 1;
+  gap      : $space-6;
+  padding  : $space-8;
+  width    : 100%;
+  color    : $color-text-primary;
+
+  @include tablet { padding: $space-5; }
+  @include mobile { padding: $space-4; }
+}
+
+.header { @include flex-col; gap: $space-1; }
+
+.pageTitle {
+  font-size     : 1.5rem;
+  font-weight   : 600;
+  color         : $color-text-primary;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size: 0.8rem;
+  color    : $color-text-muted;
+}
+
+.card {
+  @include card;
+  @include flex-col;
+  gap    : $space-4;
+  padding: $space-6;
+  max-width: 800px;
+}
+
+.cardHeader {
+  display    : flex;
+  align-items: center;
+  gap        : $space-3;
+}
+
+.cardIcon  { color: $color-accent-light; }
+.cardTitle {
+  font-size  : 1rem;
+  font-weight: 600;
+  color      : $color-text-primary;
+}
+
+.tabs {
+  display              : grid;
+  grid-template-columns: 1fr 1fr;
+  gap                  : $space-1;
+  background           : rgba(255,255,255,0.04);
+  border               : 1px solid $color-border-medium;
+  border-radius        : $radius-md;
+  padding              : 3px;
+}
+
+.tab {
+  padding      : $space-2;
+  border-radius: $radius-sm;
+  font-size    : 0.82rem;
+  font-weight  : 500;
+  color        : $color-text-muted;
+  transition   : all $transition-fast;
+  text-align   : center;
+
+  &:hover { color: $color-text-secondary; }
+
+  &.tabActive {
+    background : $color-accent-dim;
+    color      : $color-accent-light;
+    border     : 1px solid rgba(124,106,247,0.25);
+  }
+}
+
+// ---- Lista de categorias ----
+.list {
+  @include flex-col;
+  gap: $space-1;
+}
+
+.row {
+  display      : flex;
+  align-items  : center;
+  gap          : $space-3;
+  padding      : $space-3 $space-4;
+  border-radius: $radius-md;
+  border       : 1px solid $color-border;
+  background   : rgba(255,255,255,0.02);
+  transition   : border-color $transition-fast;
+
+  &:hover {
+    border-color: $color-border-medium;
+
+    .deleteBtn { opacity: 1; }
+  }
+}
+
+.dot {
+  width        : 8px;
+  height       : 8px;
+  border-radius: $radius-full;
+  flex-shrink  : 0;
+
+  &.dotExpense { background: $color-expense; }
+  &.dotIncome  { background: $color-income; }
+}
+
+.catName {
+  flex      : 1;
+  font-size : 0.875rem;
+  font-weight: 500;
+  color     : $color-text-primary;
+}
+
+.deleteBtn {
+  @include flex-center;
+  width        : 26px;
+  height       : 26px;
+  border-radius: $radius-sm;
+  color        : $color-text-muted;
+  opacity      : 0;
+  transition   : all $transition-fast;
+  font-size    : 0.75rem;
+
+  &:hover  { background: $color-expense-bg; color: $color-expense; }
+  &:disabled { opacity: 0.5; cursor: wait; }
+}
+
+// ---- Formulário inline de nova categoria ----
+.addBtn {
+  @include btn-base;
+  @include flex-center;
+  justify-content: center;
+  width      : 100%;
+  background : rgba(255,255,255,0.03);
+  border     : 1.5px dashed $color-border-medium;
+  color      : $color-text-muted;
+  padding    : $space-3;
+
+  &:hover { border-color: $color-border-strong; color: $color-text-secondary; }
+}
+
+.newForm {
+  @include flex-col;
+  gap          : $space-2;
+  padding      : $space-3 $space-4;
+  border-radius: $radius-md;
+  border       : 1.5px dashed $color-border-active;
+  background   : $color-accent-dim;
+}
+
+.newInput {
+  @include input-base;
+  font-size: 0.875rem;
+}
+
+.formError {
+  font-size: 0.75rem;
+  color    : $color-expense;
+}
+
+.formBtns {
+  display    : flex;
+  gap        : $space-2;
+  justify-content: flex-end;
+}
+
+.cancelSmall {
+  @include btn-base;
+  font-size  : 0.78rem;
+  color      : $color-text-muted;
+  background : rgba(255,255,255,0.04);
+  border     : 1px solid $color-border;
+  &:hover { color: $color-text-secondary; }
+}
+
+.saveSmall {
+  @include btn-base;
+  font-size  : 0.78rem;
+  background : $color-accent;
+  color      : #fff;
+  &:hover:not(:disabled) { filter: brightness(1.1); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.hint {
+  font-size: 0.72rem;
+  color    : $color-text-muted;
+  line-height: 1.5;
+}
+
+.empty {
+  font-size : 0.82rem;
+  color     : $color-text-muted;
+  text-align: center;
+  padding   : $space-6;
+}
+
+.loadingList { @include flex-col; gap: $space-2; }
+.skeletonRow { height: 48px; border-radius: $radius-md; }
