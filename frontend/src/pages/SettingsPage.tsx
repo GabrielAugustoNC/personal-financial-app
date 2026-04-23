@@ -1,73 +1,78 @@
-// ============================================================
-// SettingsPage — tela de configurações com gerenciamento de categorias.
-// Permite criar, visualizar e excluir categorias de receitas e despesas.
-// O backend já possui os endpoints — esta tela conecta a UI a eles.
-// ============================================================
-
 import { useState } from 'react';
 import { useCategories } from '@/hooks/useCategories';
 import { categoryService } from '@/services/categoryService';
 import type { CategoryType } from '@/types/category';
-import styles from './SettingsPage.module.scss';
 import { Plus, Trash2, Tag, Check, X } from 'lucide-react';
 
-type ActiveTab = 'expense' | 'income';
+// SettingsPage — sem dependência de variáveis SCSS externas.
+// Usa CSS custom properties (var(--...)) diretamente para garantir
+// que funciona independente da configuração do vite.config.ts.
 
-// Formulário inline para criação de nova categoria
-function NewCategoryForm({
-  type,
-  onCreated,
-}: {
-  type     : CategoryType;
-  onCreated: () => void;
-}) {
-  const [name, setName]     = useState<string>('');
-  const [saving, setSaving] = useState<boolean>(false);
+function NewCategoryForm({ type, onCreated }: { type: CategoryType; onCreated: () => void }) {
+  const [name, setName]     = useState('');
+  const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
-  const [open, setOpen]     = useState<boolean>(false);
+  const [open, setOpen]     = useState(false);
 
-  async function handleSave(): Promise<void> {
+  async function handleSave() {
     if (name.trim().length < 2) { setError('Mínimo de 2 caracteres.'); return; }
-    setSaving(true);
-    setError(null);
+    setSaving(true); setError(null);
     try {
       await categoryService.create({ name: name.trim(), type });
-      setName('');
-      setOpen(false);
-      onCreated();
+      setName(''); setOpen(false); onCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
-  if (!open) {
-    return (
-      <button className={styles.addBtn} onClick={() => setOpen(true)}>
-        <Plus size={14} /> Nova categoria
-      </button>
-    );
-  }
+  if (!open) return (
+    <button onClick={() => setOpen(true)} style={{
+      display: 'flex', alignItems: 'center', gap: 6,
+      width: '100%', padding: '12px 16px',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1.5px dashed var(--color-border-medium)',
+      borderRadius: 10, color: 'var(--color-text-muted)',
+      fontSize: '0.82rem', cursor: 'pointer', justifyContent: 'center',
+    }}>
+      <Plus size={14} /> Nova categoria
+    </button>
+  );
 
   return (
-    <div className={styles.newForm}>
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 8,
+      padding: '12px 16px', borderRadius: 10,
+      border: '1.5px dashed var(--color-border-active)',
+      background: 'var(--color-accent-dim)',
+    }}>
       <input
         type="text"
-        className={styles.newInput}
         placeholder="Nome da categoria..."
         value={name}
         onChange={e => setName(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setOpen(false); }}
-        autoFocus
-        maxLength={60}
+        autoFocus maxLength={60}
+        style={{
+          width: '100%', padding: '10px 14px',
+          background: 'var(--color-bg-input)',
+          border: '1px solid var(--color-border-medium)',
+          borderRadius: 8, color: 'var(--color-text-primary)',
+          fontSize: '0.875rem', outline: 'none',
+        }}
       />
-      {error && <p className={styles.formError}>{error}</p>}
-      <div className={styles.formBtns}>
-        <button className={styles.cancelSmall} onClick={() => { setOpen(false); setName(''); setError(null); }}>
+      {error && <p style={{ fontSize: '0.75rem', color: 'var(--color-expense)', margin: 0 }}>{error}</p>}
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <button onClick={() => { setOpen(false); setName(''); setError(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px',
+            background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)',
+            borderRadius: 8, color: 'var(--color-text-muted)', fontSize: '0.78rem', cursor: 'pointer' }}>
           <X size={13} /> Cancelar
         </button>
-        <button className={styles.saveSmall} onClick={handleSave} disabled={saving}>
+        <button onClick={handleSave} disabled={saving}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 14px',
+            background: 'var(--color-accent)', border: 'none',
+            borderRadius: 8, color: '#fff', fontSize: '0.78rem', cursor: saving ? 'not-allowed' : 'pointer',
+            opacity: saving ? 0.6 : 1 }}>
           <Check size={13} /> {saving ? 'Salvando...' : 'Criar'}
         </button>
       </div>
@@ -77,75 +82,141 @@ function NewCategoryForm({
 
 export function SettingsPage() {
   const { categories, isLoading, refetch } = useCategories();
-  // Estado de erro explícito para diagnóstico em tela (não silenciado)
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [activeTab, setActiveTab]          = useState<ActiveTab>('expense');
-  const [deletingId, setDeletingId]        = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<CategoryType>('expense');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const displayed = categories.filter(c => c.type === activeTab);
 
-  async function handleDelete(id: string, name: string): Promise<void> {
+  async function handleDelete(id: string, name: string) {
     if (!window.confirm(`Remover a categoria "${name}"? As transações existentes não serão alteradas.`)) return;
     setDeletingId(id);
-    try {
-      await categoryService.delete(id);
-      await refetch();
-    } finally {
-      setDeletingId(null);
-    }
+    try { await categoryService.delete(id); await refetch(); }
+    finally { setDeletingId(null); }
   }
 
+  const tabBase: React.CSSProperties = {
+    flex: 1, padding: '8px', borderRadius: 6,
+    fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', border: 'none',
+    transition: 'all 0.15s ease', textAlign: 'center',
+  };
+
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <h1 className={styles.pageTitle}>Configurações</h1>
-        <p className={styles.pageSubtitle}>Gerencie as categorias do sistema</p>
+    <div style={{
+      display: 'flex', flexDirection: 'column', flex: 1,
+      gap: 24, padding: 32, width: '100%',
+      color: 'var(--color-text-primary)',
+    }}>
+      {/* Header */}
+      <div>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.02em',
+          color: 'var(--color-text-primary)', margin: 0 }}>
+          Configurações
+        </h1>
+        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
+          Gerencie as categorias do sistema
+        </p>
       </div>
 
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <Tag size={16} className={styles.cardIcon} />
-          <h2 className={styles.cardTitle}>Categorias</h2>
+      {/* Card de categorias */}
+      <div style={{
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 14, padding: '24px',
+        display: 'flex', flexDirection: 'column', gap: 16,
+        maxWidth: 800,
+      }}>
+        {/* Card header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Tag size={16} style={{ color: 'var(--color-accent-light)' }} />
+          <h2 style={{ fontSize: '1rem', fontWeight: 600, margin: 0,
+            color: 'var(--color-text-primary)' }}>
+            Categorias
+          </h2>
         </div>
 
-        {/* Tabs receita/despesa */}
-        <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${activeTab === 'expense' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('expense')}
-          >
-            Despesas
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'income' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('income')}
-          >
-            Receitas
-          </button>
+        {/* Tabs */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid var(--color-border-medium)',
+          borderRadius: 10, padding: 3,
+        }}>
+          {(['expense', 'income'] as CategoryType[]).map(t => (
+            <button key={t} onClick={() => setActiveTab(t)} style={{
+              ...tabBase,
+              background: activeTab === t ? 'var(--color-accent-dim)' : 'transparent',
+              color: activeTab === t ? 'var(--color-accent-light)' : 'var(--color-text-muted)',
+              border: activeTab === t ? '1px solid rgba(124,106,247,0.25)' : '1px solid transparent',
+            }}>
+              {t === 'expense' ? 'Despesas' : 'Receitas'}
+            </button>
+          ))}
         </div>
 
-        {/* Lista de categorias */}
-        {fetchError && <p style={{ color: 'red', fontSize: '0.8rem' }}>{fetchError}</p>}
+        {/* Lista */}
         {isLoading ? (
-          <div className={styles.loadingList}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className={`skeleton ${styles.skeletonRow}`} style={{ animationDelay: `${i*0.06}s` }} />
+              <div key={i} className="skeleton" style={{ height: 48, borderRadius: 10,
+                animationDelay: `${i * 0.06}s` }} />
             ))}
           </div>
         ) : (
-          <div className={styles.list}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {displayed.length === 0 && (
-              <p className={styles.empty}>Nenhuma categoria de {activeTab === 'expense' ? 'despesa' : 'receita'} encontrada.</p>
+              <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)',
+                textAlign: 'center', padding: '24px 0', margin: 0 }}>
+                Nenhuma categoria de {activeTab === 'expense' ? 'despesa' : 'receita'} encontrada.
+              </p>
             )}
             {displayed.map(cat => (
-              <div key={cat.id} className={styles.row}>
-                <span className={`${styles.dot} ${activeTab === 'expense' ? styles.dotExpense : styles.dotIncome}`} />
-                <span className={styles.catName}>{cat.name}</span>
+              <div key={cat.id} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 16px', borderRadius: 10,
+                border: '1px solid var(--color-border)',
+                background: 'rgba(255,255,255,0.02)',
+              }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-medium)';
+                  const btn = (e.currentTarget as HTMLElement).querySelector('button') as HTMLElement;
+                  if (btn) btn.style.opacity = '1';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
+                  const btn = (e.currentTarget as HTMLElement).querySelector('button') as HTMLElement;
+                  if (btn) btn.style.opacity = '0';
+                }}
+              >
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                  background: activeTab === 'expense'
+                    ? 'var(--color-expense)' : 'var(--color-income)',
+                }} />
+                <span style={{ flex: 1, fontSize: '0.875rem', fontWeight: 500,
+                  color: 'var(--color-text-primary)' }}>
+                  {cat.name}
+                </span>
                 <button
-                  className={styles.deleteBtn}
                   onClick={() => handleDelete(cat.id, cat.name)}
                   disabled={deletingId === cat.id}
-                  title="Remover categoria"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 26, height: 26, borderRadius: 6,
+                    color: 'var(--color-text-muted)', border: 'none',
+                    background: 'transparent', cursor: 'pointer',
+                    opacity: 0, transition: 'all 0.15s ease',
+                    fontSize: '0.75rem',
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.background = 'var(--color-expense-bg)';
+                    el.style.color = 'var(--color-expense)';
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.background = 'transparent';
+                    el.style.color = 'var(--color-text-muted)';
+                  }}
                 >
                   {deletingId === cat.id ? '...' : <Trash2 size={13} />}
                 </button>
@@ -154,10 +225,9 @@ export function SettingsPage() {
           </div>
         )}
 
-        {/* Formulário de nova categoria */}
         <NewCategoryForm type={activeTab} onCreated={refetch} />
 
-        <p className={styles.hint}>
+        <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
           ⚠️ Remover uma categoria não altera as transações já classificadas com ela.
         </p>
       </div>

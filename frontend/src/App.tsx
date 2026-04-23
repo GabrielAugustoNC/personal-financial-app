@@ -11,6 +11,7 @@ import { Sidebar }           from '@/components/Sidebar/Sidebar';
 import { Dashboard }         from '@/components/Dashboard/Dashboard';
 import { AnalyticsDashboard } from '@/components/Analytics/AnalyticsDashboard';
 import { LoginPage }         from '@/pages/LoginPage';
+import { SettingsPage }      from '@/pages/SettingsPage';
 import styles from './App.module.scss';
 
 // AppContent é o conteúdo real — separado do App para poder usar o hook useAuth
@@ -45,6 +46,7 @@ function AppContent() {
       <main className={styles.main}>
         {activeView === 'dashboard' && <Dashboard />}
         {activeView === 'analytics' && <AnalyticsDashboard />}
+        {activeView === 'settings'  && <SettingsPage />}
       </main>
     </div>
   );
